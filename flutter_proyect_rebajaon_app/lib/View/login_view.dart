@@ -11,6 +11,7 @@ class LoginView extends StatefulWidget {
   @override
   State<LoginView> createState() => _LoginViewState();
 }
+// Pantalla de login - rama feature/login.
 
 class _LoginViewState extends State<LoginView> {
   final _emailCtrl = TextEditingController();
