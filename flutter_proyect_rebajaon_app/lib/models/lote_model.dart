@@ -1,18 +1,17 @@
-// Este archivo le dice a FLUTTER como organizar los datos de un lote de medicamentos
 class LoteModel {
-  final int id; // Identificador único del lote
-  final String createTime; // Fecha y hora en que se creó el lote
-  final int idMedicamento; // Relación con el medicamento al que pertenece
-  final String numeroLote; // Número que identifica el lote
-  final String fechaFabricacion; // Fecha en que fue fabricado
-  final String fechaVencimiento; // Fecha en que vence
-  final int cantidadInicial; // Cantidad con la que inició el lote
-  final int cantidadDisponible; // Cantidad actual disponible
-  final String codigoBarras; // Código de barras del lote
+  final int? id;
+  final String? createTime;
+  final int idMedicamento;
+  final String numeroLote;
+  final String fechaFabricacion;
+  final String fechaVencimiento;
+  final int cantidadInicial;
+  final int cantidadDisponible;
+  final String codigoBarras;
 
   LoteModel({
-    required this.id,
-    required this.createTime,
+    this.id,
+    this.createTime,
     required this.idMedicamento,
     required this.numeroLote,
     required this.fechaFabricacion,
@@ -22,18 +21,17 @@ class LoteModel {
     required this.codigoBarras,
   });
 
-  // Convierte un Map (JSON o base de datos) en un objeto LoteModel
   factory LoteModel.fromMap(Map<String, dynamic> map) {
     return LoteModel(
-      id: int.parse(map['id'].toString()), // Convierte el id a entero
-      createTime: map['createTime'], // Asigna la fecha de creación
-      idMedicamento: int.parse(map['idMedicamento'].toString()), // Convierte el id del medicamento
-      numeroLote: map['numeroLote'], // Asigna el número de lote
-      fechaFabricacion: map['fechaFabricacion'], // Asigna fecha de fabricación
-      fechaVencimiento: map['fechaVencimiento'], // Asigna fecha de vencimiento
-      cantidadInicial: int.parse(map['cantidadInicial'].toString()), // Convierte cantidad inicial
-      cantidadDisponible: int.parse(map['cantidadDisponible'].toString()), // Convierte cantidad disponible
-      codigoBarras: map['codigoBarras'], // Asigna el código de barras
+      id: int.parse(map['id'].toString()),
+      createTime: map['create_time']?.toString(),
+      idMedicamento: int.parse(map['id_medicamento'].toString()),
+      numeroLote: map['numero_lote'] ?? '',
+      fechaFabricacion: map['fecha_fabricacion']?.toString() ?? '',
+      fechaVencimiento: map['fecha_vencimiento']?.toString() ?? '',
+      cantidadInicial: int.parse(map['cantidad_inicial'].toString()),
+      cantidadDisponible: int.parse(map['cantidad_disponible'].toString()),
+      codigoBarras: map['codigo_barras'] ?? '',
     );
   }
 }

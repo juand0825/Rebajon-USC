@@ -1,7 +1,7 @@
 import 'package:flutter_proyect_rebajaon_app/models/lote_model.dart';
 
 import '../database/db_connection.dart';
-import '../Models/lote_model.dart';
+
 
 class LoteDao {
   Future<void> insertarLote(LoteModel lote) async {

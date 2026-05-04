@@ -1,7 +1,6 @@
 import 'package:flutter_proyect_rebajaon_app/models/medicamento_model.dart';
 
 import '../database/db_connection.dart';
-import '../Models/medicamento_model.dart';
 
 class MedicamentoDao {
   Future<void> insertarMedicamento(MedicamentoModel medicamento) async {
@@ -34,5 +33,18 @@ class MedicamentoDao {
     return result.rows
         .map((row) => MedicamentoModel.fromMap(row.assoc()))
         .toList();
+  }
+
+  Future<MedicamentoModel?> buscarPorNombre(String nombre) async {
+    final conn = await DbConnection.getConnection();
+
+    final result = await conn.execute(
+      'SELECT * FROM medicamentos WHERE nombre = :nombre ORDER BY id DESC LIMIT 1',
+      {'nombre': nombre},
+    );
+
+    if (result.rows.isEmpty) return null;
+
+    return MedicamentoModel.fromMap(result.rows.first.assoc());
   }
 }
