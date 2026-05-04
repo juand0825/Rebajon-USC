@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Controllers/medicamento_controller.dart';
 
 class MedicamentosView extends StatefulWidget {
   const MedicamentosView({super.key});
@@ -8,6 +9,7 @@ class MedicamentosView extends StatefulWidget {
 }
 
 class _MedicamentosViewState extends State<MedicamentosView> {
+  final medicamentoController = MedicamentoController();
   final nombreCtrl = TextEditingController();
   final principioCtrl = TextEditingController();
   final presentacionCtrl = TextEditingController();
@@ -56,10 +58,62 @@ class _MedicamentosViewState extends State<MedicamentosView> {
     });
   }
 
-  void guardar() {
+  void mostrarMensaje(String mensaje) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text("Datos guardados de prueba")));
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  Future<void> guardar() async {
+    if (nombreCtrl.text.isEmpty ||
+        stockMinimoCtrl.text.isEmpty ||
+        loteCtrl.text.isEmpty ||
+        cantidadInicialCtrl.text.isEmpty ||
+        cantidadDisponibleCtrl.text.isEmpty) {
+      mostrarMensaje("Completa los campos obligatorios");
+      return;
+    }
+
+    final stockMinimo = int.tryParse(stockMinimoCtrl.text);
+    final cantidadInicial = int.tryParse(cantidadInicialCtrl.text);
+    final cantidadDisponible = int.tryParse(cantidadDisponibleCtrl.text);
+
+    if (stockMinimo == null ||
+        cantidadInicial == null ||
+        cantidadDisponible == null) {
+      mostrarMensaje("Stock y cantidades deben ser números");
+      return;
+    }
+
+    if (cantidadDisponible > cantidadInicial) {
+      mostrarMensaje(
+        "La cantidad disponible no puede ser mayor que la inicial",
+      );
+      return;
+    }
+
+    try {
+      await medicamentoController.guardarMedicamentoYLote(
+        nombre: nombreCtrl.text,
+        principioActivo: principioCtrl.text,
+        presentacion: presentacionCtrl.text,
+        fabricante: fabricanteCtrl.text,
+        stockMinimo: stockMinimo,
+        requiereRefrigeracion: requiereRefrigeracion,
+        activo: activo,
+        numeroLote: loteCtrl.text,
+        fechaFabricacion: fechaFabCtrl.text,
+        fechaVencimiento: fechaVenCtrl.text,
+        cantidadInicial: cantidadInicial,
+        cantidadDisponible: cantidadDisponible,
+        codigoBarras: codigoCtrl.text,
+      );
+
+      mostrarMensaje("Medicamento y lote guardados correctamente");
+      limpiar();
+    } catch (e) {
+      mostrarMensaje("Error al guardar");
+    }
   }
 
   @override
