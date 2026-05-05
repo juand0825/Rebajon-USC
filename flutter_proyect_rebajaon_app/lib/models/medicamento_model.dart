@@ -33,8 +33,8 @@ class MedicamentoModel {
       fabricante: map['fabricante'] ?? '',
       stockActual: int.parse(map['stock_actual'].toString()),
       stockMinimo: int.parse(map['stock_minimo'].toString()),
-      requiereRefrigeracion: map['requiere_refrigeracion'] == 1 || map['requiere_refrigeracion'] == true,
-      activo: map['activo'] == 1 || map['activo'] == true,
+      requiereRefrigeracion: map['requiere_refrigeracion'].toString() == '1',
+      activo: map['activo'].toString() == '1',
     );
   }
 }
