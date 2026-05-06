@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../DAO/medicamento_dao.dart';
 import '../models/medicamento_model.dart';
 import '../Controllers/temperatura_controller.dart';
+import '../Controllers/alerta_controller.dart';
 
 class InventarioView extends StatefulWidget {
   const InventarioView({super.key});
@@ -13,6 +14,7 @@ class InventarioView extends StatefulWidget {
 class _InventarioViewState extends State<InventarioView> {
   final medicamentoDao = MedicamentoDao();
   final temperaturaController = TemperaturaController();
+  final alertaController = AlertaController();
 
   List<MedicamentoModel> medicamentos = [];
   bool cargando = true;
@@ -78,6 +80,14 @@ class _InventarioViewState extends State<InventarioView> {
     try {
       await temperaturaController.guardarTemperatura(
         idMedicamento: medicamentoSeleccionado!.id!,
+        temperatura: temperatura,
+        rangoMin: rangoMin,
+        rangoMax: rangoMax,
+      );
+
+      await alertaController.generarAlertaCadenaFrio(
+        idMedicamento: medicamentoSeleccionado!.id!,
+        nombreMedicamento: medicamentoSeleccionado!.nombre,
         temperatura: temperatura,
         rangoMin: rangoMin,
         rangoMax: rangoMax,
