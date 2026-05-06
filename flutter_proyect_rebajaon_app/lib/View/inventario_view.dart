@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../DAO/medicamento_dao.dart';
 import '../models/medicamento_model.dart';
+import '../Controllers/temperatura_controller.dart';
 
 class InventarioView extends StatefulWidget {
   const InventarioView({super.key});
@@ -11,6 +12,7 @@ class InventarioView extends StatefulWidget {
 
 class _InventarioViewState extends State<InventarioView> {
   final medicamentoDao = MedicamentoDao();
+  final temperaturaController = TemperaturaController();
 
   List<MedicamentoModel> medicamentos = [];
   bool cargando = true;
@@ -38,7 +40,7 @@ class _InventarioViewState extends State<InventarioView> {
         cargando = false;
       });
 
-      mostrarMensaje("Error al cargar inventario");
+      mostrarMensaje("Error al cargar inventario: $e");
     }
   }
 
@@ -52,7 +54,7 @@ class _InventarioViewState extends State<InventarioView> {
     ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
-  void guardarTemperatura() {
+  Future<void> guardarTemperatura() async {
     final incompleto =
         medicamentoSeleccionado == null ||
         temperaturaCtrl.text.isEmpty ||
@@ -60,7 +62,7 @@ class _InventarioViewState extends State<InventarioView> {
         rangoMaxCtrl.text.isEmpty;
 
     if (incompleto) {
-      mostrarMensaje("Completa todos los campos de temperatura");
+      mostrarMensaje("Completa todos los campos");
       return;
     }
 
@@ -68,29 +70,34 @@ class _InventarioViewState extends State<InventarioView> {
     final rangoMin = double.tryParse(rangoMinCtrl.text);
     final rangoMax = double.tryParse(rangoMaxCtrl.text);
 
-    final numerosInvalidos =
-        temperatura == null || rangoMin == null || rangoMax == null;
-
-    if (numerosInvalidos) {
+    if (temperatura == null || rangoMin == null || rangoMax == null) {
       mostrarMensaje("La temperatura y los rangos deben ser números");
       return;
     }
 
-    final fueraDeRango = temperatura < rangoMin || temperatura > rangoMax;
+    try {
+      await temperaturaController.guardarTemperatura(
+        idMedicamento: medicamentoSeleccionado!.id!,
+        temperatura: temperatura,
+        rangoMin: rangoMin,
+        rangoMax: rangoMax,
+      );
 
-    mostrarMensaje(
-      fueraDeRango
-          ? "Temperatura fuera de rango"
-          : "Temperatura registrada correctamente",
-    );
+      final fueraDeRango = temperatura < rangoMin || temperatura > rangoMax;
 
-    temperaturaCtrl.clear();
-    rangoMinCtrl.clear();
-    rangoMaxCtrl.clear();
+      mostrarMensaje(
+        fueraDeRango
+            ? "Temperatura fuera de rango"
+            : "Temperatura guardada correctamente",
+      );
 
-    setState(() {
-      medicamentoSeleccionado = null;
-    });
+      temperaturaCtrl.clear();
+      rangoMinCtrl.clear();
+      rangoMaxCtrl.clear();
+      setState(() => medicamentoSeleccionado = null);
+    } catch (e) {
+      mostrarMensaje("Error al guardar temperatura: $e");
+    }
   }
 
   Widget campo(String texto, TextEditingController controlador) {
