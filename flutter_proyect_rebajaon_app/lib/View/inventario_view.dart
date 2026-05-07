@@ -33,6 +33,16 @@ class _InventarioViewState extends State<InventarioView> {
   Future<void> cargarMedicamentos() async {
     try {
       final lista = await medicamentoDao.listarMedicamentos();
+
+      for (var medicamento in lista) {
+        await alertaController.generarAlertaStockMinimo(
+          idMedicamento: medicamento.id!,
+          nombreMedicamento: medicamento.nombre,
+          stockActual: medicamento.stockActual,
+          stockMinimo: medicamento.stockMinimo,
+        );
+      }
+
       setState(() {
         medicamentos = lista;
         cargando = false;
@@ -42,7 +52,7 @@ class _InventarioViewState extends State<InventarioView> {
         cargando = false;
       });
 
-      mostrarMensaje("Error al cargar inventario: $e");
+      mostrarMensaje("Error al cargar inventario");
     }
   }
 

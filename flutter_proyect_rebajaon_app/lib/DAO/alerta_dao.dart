@@ -25,12 +25,28 @@ class AlertaDao {
   Future<List<AlertaModel>> listarAlertas() async {
     final conn = await DbConnection.getConnection();
 
+    final result = await conn.execute('SELECT * FROM alerta ORDER BY id DESC');
+
+    return result.rows.map((row) => AlertaModel.fromMap(row.assoc())).toList();
+  }
+
+  Future<bool> existeAlertaActiva({
+    required int idMedicamento,
+    required String tipo,
+  }) async {
+    final conn = await DbConnection.getConnection();
+
     final result = await conn.execute(
-      'SELECT * FROM alerta ORDER BY id DESC',
+      '''
+    SELECT * FROM alerta
+    WHERE id_medicamento = :id_medicamento
+    AND tipo = :tipo
+    AND resulta = 0
+    LIMIT 1
+    ''',
+      {'id_medicamento': idMedicamento, 'tipo': tipo},
     );
 
-    return result.rows
-        .map((row) => AlertaModel.fromMap(row.assoc()))
-        .toList();
+    return result.rows.isNotEmpty;
   }
 }
