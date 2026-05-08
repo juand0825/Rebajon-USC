@@ -3,6 +3,7 @@ import '../DAO/medicamento_dao.dart';
 import '../models/medicamento_model.dart';
 import '../Controllers/temperatura_controller.dart';
 import '../Controllers/alerta_controller.dart';
+import '../DAO/lote_dao.dart';
 
 class InventarioView extends StatefulWidget {
   const InventarioView({super.key});
@@ -15,6 +16,7 @@ class _InventarioViewState extends State<InventarioView> {
   final medicamentoDao = MedicamentoDao();
   final temperaturaController = TemperaturaController();
   final alertaController = AlertaController();
+  final loteDao = LoteDao();
 
   List<MedicamentoModel> medicamentos = [];
   bool cargando = true;
@@ -33,6 +35,7 @@ class _InventarioViewState extends State<InventarioView> {
   Future<void> cargarMedicamentos() async {
     try {
       final lista = await medicamentoDao.listarMedicamentos();
+      final lotes = await loteDao.listarLotes();
 
       for (var medicamento in lista) {
         await alertaController.generarAlertaStockMinimo(
@@ -40,6 +43,24 @@ class _InventarioViewState extends State<InventarioView> {
           nombreMedicamento: medicamento.nombre,
           stockActual: medicamento.stockActual,
           stockMinimo: medicamento.stockMinimo,
+        );
+      }
+
+      for (var lote in lotes) {
+        final medicamento = lista.firstWhere((m) => m.id == lote.idMedicamento);
+
+        await alertaController.generarAlertaVencimientoProximo(
+          idMedicamento: lote.idMedicamento,
+          idLote: lote.id!,
+          nombreMedicamento: medicamento.nombre,
+          fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
+        );
+
+        await alertaController.generarAlertaMedicamentoVencido(
+          idMedicamento: lote.idMedicamento,
+          idLote: lote.id!,
+          nombreMedicamento: medicamento.nombre,
+          fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
         );
       }
 
@@ -52,7 +73,7 @@ class _InventarioViewState extends State<InventarioView> {
         cargando = false;
       });
 
-      mostrarMensaje("Error al cargar inventario");
+      mostrarMensaje("Error al cargar inventario: $e");
     }
   }
 

@@ -61,4 +61,65 @@ class AlertaController {
 
     await alertaDao.insertarAlerta(alerta);
   }
+
+  Future<void> generarAlertaVencimientoProximo({
+    required int idMedicamento,
+    required int idLote,
+    required String nombreMedicamento,
+    required DateTime fechaVencimiento,
+  }) async {
+    final hoy = DateTime.now();
+    final diferencia = fechaVencimiento.difference(hoy).inDays;
+
+    if (diferencia < 0 || diferencia > 30) return;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'VENCIMIENTO_PROXIMO',
+    );
+
+    if (yaExiste) return;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: idLote,
+      tipo: 'VENCIMIENTO_PROXIMO',
+      nivelGravedad: 'ADVERTENCIA',
+      mensaje:
+          'El lote del medicamento $nombreMedicamento está próximo a vencer.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+  }
+
+  Future<void> generarAlertaMedicamentoVencido({
+    required int idMedicamento,
+    required int idLote,
+    required String nombreMedicamento,
+    required DateTime fechaVencimiento,
+  }) async {
+    final hoy = DateTime.now();
+
+    if (!fechaVencimiento.isBefore(hoy)) return;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'MEDICAMENTO_VENCIDO',
+    );
+
+    if (yaExiste) return;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: idLote,
+      tipo: 'MEDICAMENTO_VENCIDO',
+      nivelGravedad: 'CRITICO',
+      mensaje:
+          'El lote del medicamento $nombreMedicamento se encuentra vencido.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+  }
 }
