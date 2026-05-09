@@ -38,12 +38,18 @@ class _InventarioViewState extends State<InventarioView> {
       final lotes = await loteDao.listarLotes();
 
       for (var medicamento in lista) {
-        await alertaController.generarAlertaStockMinimo(
+        final mensaje = await alertaController.generarAlertaStockMinimo(
           idMedicamento: medicamento.id!,
           nombreMedicamento: medicamento.nombre,
           stockActual: medicamento.stockActual,
           stockMinimo: medicamento.stockMinimo,
         );
+
+        if (mensaje != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            mostrarAlertaGrande(mensaje);
+          });
+        }
       }
 
       for (var lote in lotes) {
@@ -56,12 +62,19 @@ class _InventarioViewState extends State<InventarioView> {
           fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
         );
 
-        await alertaController.generarAlertaMedicamentoVencido(
-          idMedicamento: lote.idMedicamento,
-          idLote: lote.id!,
-          nombreMedicamento: medicamento.nombre,
-          fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
-        );
+        final mensajeVencido = await alertaController
+            .generarAlertaMedicamentoVencido(
+              idMedicamento: lote.idMedicamento,
+              idLote: lote.id!,
+              nombreMedicamento: medicamento.nombre,
+              fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
+            );
+
+        if (mensajeVencido != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            mostrarAlertaGrande(mensajeVencido);
+          });
+        }
       }
 
       setState(() {
@@ -85,6 +98,26 @@ class _InventarioViewState extends State<InventarioView> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  void mostrarAlertaGrande(String mensaje) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Alerta"),
+          content: Text(mensaje),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> guardarTemperatura() async {
@@ -116,13 +149,19 @@ class _InventarioViewState extends State<InventarioView> {
         rangoMax: rangoMax,
       );
 
-      await alertaController.generarAlertaCadenaFrio(
+      final mensajeCadenaFrio = await alertaController.generarAlertaCadenaFrio(
         idMedicamento: medicamentoSeleccionado!.id!,
         nombreMedicamento: medicamentoSeleccionado!.nombre,
         temperatura: temperatura,
         rangoMin: rangoMin,
         rangoMax: rangoMax,
       );
+
+      if (mensajeCadenaFrio != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          mostrarAlertaGrande(mensajeCadenaFrio);
+        });
+      }
 
       final fueraDeRango = temperatura < rangoMin || temperatura > rangoMax;
 
