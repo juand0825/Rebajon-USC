@@ -64,6 +64,30 @@ class LoteDao {
     );
   }
 
+  // DESCONTAR STOCK POR CANTIDAD
+
+  Future<void> descontarStockPorCantidad(
+  String codigoBarras,
+  int cantidad,
+) async {
+  final conn =
+      await DbConnection.getConnection();
+
+  await conn.execute(
+    '''
+    UPDATE lotes
+    SET cantidad_disponible =
+        cantidad_disponible - :cantidad
+    WHERE codigo_barras = :codigo
+      AND cantidad_disponible >= :cantidad
+    ''',
+    {
+      'codigo': codigoBarras,
+      'cantidad': cantidad,
+    },
+  );
+}
+
   // LISTAR LOTES
 
   Future<List<LoteModel>>
