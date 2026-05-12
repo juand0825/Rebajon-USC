@@ -10,9 +10,9 @@ class DbConnection {
 
     _connection = await MySQLConnection.createConnection(
       host: '127.0.0.1',
-      port: 3308,
+      port: 3306,
       userName: 'root',
-      password: 'Arc11@22',
+      password: '082513',
       databaseName: 'farmacia',
     );
 
