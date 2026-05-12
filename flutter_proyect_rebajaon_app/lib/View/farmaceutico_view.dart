@@ -16,7 +16,6 @@ class HomeFarmaceuticoView extends StatelessWidget {
 
       appBar: AppBar(
         title: const Text("Panel Farmacéutico"),
-
         centerTitle: true,
       ),
 
@@ -25,59 +24,44 @@ class HomeFarmaceuticoView extends StatelessWidget {
 
         child: GridView.count(
           crossAxisCount: 2,
-
           crossAxisSpacing: 16,
-
           mainAxisSpacing: 16,
 
           children: [
             _buildCard(
               context,
-
               titulo: "Medicamentos",
-
               icono: Icons.medication,
 
-              destino: const MedicamentosView(codigoBarras: ''),
+              // MedicamentosView no recibe parámetro codigoBarras
+              destino: const MedicamentosView(),
             ),
 
             _buildCard(
               context,
-
               titulo: "Ventas",
-
               icono: Icons.shopping_cart,
-
               destino: const VentasView(),
             ),
 
             _buildCard(
               context,
-
               titulo: "Inventario",
-
               icono: Icons.inventory,
-
               destino: const InventarioView(),
             ),
 
             _buildCard(
               context,
-
               titulo: "Alertas",
-
               icono: Icons.warning,
-
               destino: const AlertasView(),
             ),
 
             _buildCard(
               context,
-
               titulo: "Reportes",
-
               icono: Icons.bar_chart,
-
               destino: const ReportesView(),
             ),
           ],
@@ -88,16 +72,18 @@ class HomeFarmaceuticoView extends StatelessWidget {
 
   Widget _buildCard(
     BuildContext context, {
-
     required String titulo,
-
     required IconData icono,
-
     required Widget destino,
   }) {
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => destino));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => destino,
+          ),
+        );
       },
 
       child: Card(
@@ -107,16 +93,21 @@ class HomeFarmaceuticoView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
-            Icon(icono, size: 50, color: Colors.blue),
+            Icon(
+              icono,
+              size: 50,
+              color: Colors.blue,
+            ),
 
             const SizedBox(height: 12),
 
             Text(
               titulo,
-
               textAlign: TextAlign.center,
-
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
