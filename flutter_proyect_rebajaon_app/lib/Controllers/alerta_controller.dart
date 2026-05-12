@@ -4,7 +4,7 @@ import '../models/alerta_model.dart';
 class AlertaController {
   final AlertaDao alertaDao = AlertaDao();
 
-  Future<void> generarAlertaCadenaFrio({
+  Future<String?> generarAlertaCadenaFrio({
     required int idMedicamento,
     required String nombreMedicamento,
     required double temperatura,
@@ -13,14 +13,14 @@ class AlertaController {
   }) async {
     final fueraDeRango = temperatura < rangoMin || temperatura > rangoMax;
 
-    if (!fueraDeRango) return;
+    if (!fueraDeRango) return null;
 
     final yaExiste = await alertaDao.existeAlertaActiva(
       idMedicamento: idMedicamento,
       tipo: 'CADENA_FRIO',
     );
 
-    if (yaExiste) return;
+    if (yaExiste) return null;
 
     final alerta = AlertaModel(
       idMedicamento: idMedicamento,
@@ -33,22 +33,23 @@ class AlertaController {
     );
 
     await alertaDao.insertarAlerta(alerta);
+    return alerta.mensaje;
   }
 
-  Future<void> generarAlertaStockMinimo({
+  Future<String?> generarAlertaStockMinimo({
     required int idMedicamento,
     required String nombreMedicamento,
     required int stockActual,
     required int stockMinimo,
   }) async {
-    if (stockActual > stockMinimo) return;
+    if (stockActual > stockMinimo) return null;
 
     final yaExiste = await alertaDao.existeAlertaActiva(
       idMedicamento: idMedicamento,
       tipo: 'STOCK_MINIMO',
     );
 
-    if (yaExiste) return;
+    if (yaExiste) return null;
 
     final alerta = AlertaModel(
       idMedicamento: idMedicamento,
@@ -60,5 +61,68 @@ class AlertaController {
     );
 
     await alertaDao.insertarAlerta(alerta);
+    return alerta.mensaje;
+  }
+
+  Future<void> generarAlertaVencimientoProximo({
+    required int idMedicamento,
+    required int idLote,
+    required String nombreMedicamento,
+    required DateTime fechaVencimiento,
+  }) async {
+    final hoy = DateTime.now();
+    final diferencia = fechaVencimiento.difference(hoy).inDays;
+
+    if (diferencia < 0 || diferencia > 30) return;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'VENCIMIENTO_PROXIMO',
+    );
+
+    if (yaExiste) return;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: idLote,
+      tipo: 'VENCIMIENTO_PROXIMO',
+      nivelGravedad: 'ADVERTENCIA',
+      mensaje:
+          'El lote del medicamento $nombreMedicamento está próximo a vencer.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+  }
+
+  Future<String?> generarAlertaMedicamentoVencido({
+    required int idMedicamento,
+    required int idLote,
+    required String nombreMedicamento,
+    required DateTime fechaVencimiento,
+  }) async {
+    final hoy = DateTime.now();
+
+    if (!fechaVencimiento.isBefore(hoy)) return null;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'MEDICAMENTO_VENCIDO',
+    );
+
+    if (yaExiste) return null;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: idLote,
+      tipo: 'MEDICAMENTO_VENCIDO',
+      nivelGravedad: 'CRITICO',
+      mensaje:
+          'El lote del medicamento $nombreMedicamento se encuentra vencido.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+    return alerta.mensaje;
   }
 }

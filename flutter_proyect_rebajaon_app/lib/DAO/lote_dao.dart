@@ -1,19 +1,11 @@
 import 'package:flutter_proyect_rebajaon_app/models/lote_model.dart';
-
 import '../database/db_connection.dart';
 
 class LoteDao {
-
-  // INSERTAR LOTE
-
-  Future<void> insertarLote(
-      LoteModel lote) async {
-
-    final conn =
-        await DbConnection.getConnection();
+  Future<void> insertarLote(LoteModel lote) async {
+    final conn = await DbConnection.getConnection();
 
     await conn.execute(
-
       '''
       INSERT INTO lotes
       (
@@ -25,7 +17,6 @@ class LoteDao {
         cantidad_disponible,
         codigo_barras
       )
-
       VALUES
       (
         :id_medicamento,
@@ -37,29 +28,14 @@ class LoteDao {
         :codigo_barras
       )
       ''',
-
       {
-
-        'id_medicamento':
-            lote.idMedicamento,
-
-        'numero_lote':
-            lote.numeroLote,
-
-        'fecha_fabricacion':
-            lote.fechaFabricacion,
-
-        'fecha_vencimiento':
-            lote.fechaVencimiento,
-
-        'cantidad_inicial':
-            lote.cantidadInicial,
-
-        'cantidad_disponible':
-            lote.cantidadDisponible,
-
-        'codigo_barras':
-            lote.codigoBarras,
+        'id_medicamento': lote.idMedicamento,
+        'numero_lote': lote.numeroLote,
+        'fecha_fabricacion': lote.fechaFabricacion,
+        'fecha_vencimiento': lote.fechaVencimiento,
+        'cantidad_inicial': lote.cantidadInicial,
+        'cantidad_disponible': lote.cantidadDisponible,
+        'codigo_barras': lote.codigoBarras,
       },
     );
   }
@@ -98,91 +74,65 @@ class LoteDao {
         await DbConnection.getConnection();
 
     final result = await conn.execute(
-
       '''
       SELECT *
       FROM lotes
-      WHERE id_medicamento =
-            :id_medicamento
+      WHERE id_medicamento = :id_medicamento
       ''',
-
       {
-        'id_medicamento':
-            idMedicamento,
+        'id_medicamento': idMedicamento,
       },
     );
 
     return result.rows
-
-        .map(
-          (row) => LoteModel.fromMap(
-            row.assoc(),
-          ),
-        )
-
+        .map((row) => LoteModel.fromMap(row.assoc()))
         .toList();
   }
 
-  // BUSCAR POR CÓDIGO DE BARRAS
+  Future<List<LoteModel>> listarLotes() async {
+    final conn = await DbConnection.getConnection();
 
-  Future<LoteModel?>
-      buscarPorCodigoBarras(
-          String codigoBarras) async {
+    final result = await conn.execute('SELECT * FROM lotes');
 
-    final conn =
-        await DbConnection.getConnection();
+    return result.rows
+        .map((row) => LoteModel.fromMap(row.assoc()))
+        .toList();
+  }
+
+  Future<LoteModel?> buscarPorCodigoBarras(String codigoBarras) async {
+    final conn = await DbConnection.getConnection();
 
     final result = await conn.execute(
-
       '''
       SELECT *
       FROM lotes
-      WHERE codigo_barras =
-            :codigo_barras
+      WHERE codigo_barras = :codigo_barras
       LIMIT 1
       ''',
-
       {
-        'codigo_barras':
-            codigoBarras,
+        'codigo_barras': codigoBarras,
       },
     );
 
     if (result.rows.isEmpty) {
-
       return null;
     }
 
-    return LoteModel.fromMap(
-      result.rows.first.assoc(),
-    );
+    return LoteModel.fromMap(result.rows.first.assoc());
   }
 
-  // DESCONTAR STOCK
-
-  Future<void> descontarStock(
-      String codigoBarras) async {
-
-    final conn =
-        await DbConnection.getConnection();
+  Future<void> descontarStock(String codigoBarras) async {
+    final conn = await DbConnection.getConnection();
 
     await conn.execute(
-
       '''
       UPDATE lotes
-
-      SET cantidad_disponible =
-          cantidad_disponible - 1
-
-      WHERE codigo_barras =
-            :codigo_barras
-
+      SET cantidad_disponible = cantidad_disponible - 1
+      WHERE codigo_barras = :codigo_barras
       AND cantidad_disponible > 0
       ''',
-
       {
-        'codigo_barras':
-            codigoBarras,
+        'codigo_barras': codigoBarras,
       },
     );
   }
