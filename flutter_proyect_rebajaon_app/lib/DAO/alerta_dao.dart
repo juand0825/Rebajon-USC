@@ -68,4 +68,30 @@ class AlertaDao {
       {'id_medicamento': idMedicamento, 'tipo': tipo},
     );
   }
+
+  Future<void> actualizarAlertaActiva({
+    required int idMedicamento,
+    required String tipo,
+    required String nivelGravedad,
+    required String mensaje,
+  }) async {
+    final conn = await DbConnection.getConnection();
+
+    await conn.execute(
+      '''
+    UPDATE alerta
+    SET nivel_gravedad = :nivel_gravedad,
+        mensaje = :mensaje
+    WHERE id_medicamento = :id_medicamento
+      AND tipo = :tipo
+      AND resulta = 0
+    ''',
+      {
+        'id_medicamento': idMedicamento,
+        'tipo': tipo,
+        'nivel_gravedad': nivelGravedad,
+        'mensaje': mensaje,
+      },
+    );
+  }
 }
