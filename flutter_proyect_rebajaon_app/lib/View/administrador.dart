@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Controllers/auth_controller.dart';
 import 'login_view.dart';
+import 'registro_view.dart';
+import 'inventario_view.dart';
+import 'alertas_view.dart';
 
 class HomeAdminView extends StatelessWidget {
   const HomeAdminView({super.key});
@@ -9,6 +12,7 @@ class HomeAdminView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -46,16 +50,68 @@ class HomeAdminView extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.logout, color: Colors.red),
-            label: const Text("Cerrar sesion", style: TextStyle(color: Colors.red)),
-
+            label: const Text(
+              "Cerrar sesión",
+              style: TextStyle(color: Colors.red),
+            ),
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: const Center(
-        child: Text(
-          "Bienvenido Administrador",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildCard(
+              context,
+              titulo: "Registrar usuarios",
+              icono: Icons.person_add,
+              destino: const RegistroView(),
+            ),
+            _buildCard(
+              context,
+              titulo: "Inventario",
+              icono: Icons.inventory,
+              destino: const InventarioView(),
+            ),
+            _buildCard(
+              context,
+              titulo: "Alertas",
+              icono: Icons.warning,
+              destino: const AlertasView(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context, {
+    required String titulo,
+    required IconData icono,
+    required Widget destino,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => destino));
+      },
+      child: Card(
+        elevation: 4,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icono, size: 50, color: Colors.blue),
+            const SizedBox(height: 12),
+            Text(
+              titulo,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );
