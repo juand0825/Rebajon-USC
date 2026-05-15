@@ -4,6 +4,7 @@ import '../models/medicamento_model.dart';
 import '../Controllers/temperatura_controller.dart';
 import '../Controllers/alerta_controller.dart';
 import '../DAO/lote_dao.dart';
+import '../Controllers/medicamento_controller.dart';
 
 class InventarioView extends StatefulWidget {
   const InventarioView({super.key});
@@ -17,6 +18,7 @@ class _InventarioViewState extends State<InventarioView> {
   final temperaturaController = TemperaturaController();
   final alertaController = AlertaController();
   final loteDao = LoteDao();
+  final medicamentoController = MedicamentoController();
 
   List<MedicamentoModel> medicamentos = [];
   bool cargando = true;
@@ -25,6 +27,14 @@ class _InventarioViewState extends State<InventarioView> {
   final temperaturaCtrl = TextEditingController();
   final rangoMinCtrl = TextEditingController();
   final rangoMaxCtrl = TextEditingController();
+
+  MedicamentoModel? medicamentoLoteSeleccionado;
+  final loteCtrl = TextEditingController();
+  final fechaFabCtrl = TextEditingController();
+  final fechaVenCtrl = TextEditingController();
+  final cantidadInicialCtrl = TextEditingController();
+  final cantidadDisponibleCtrl = TextEditingController();
+  final codigoCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -120,6 +130,63 @@ class _InventarioViewState extends State<InventarioView> {
     );
   }
 
+  Future<void> guardarNuevoLote() async {
+    if (medicamentoLoteSeleccionado == null ||
+        loteCtrl.text.isEmpty ||
+        fechaVenCtrl.text.isEmpty ||
+        cantidadInicialCtrl.text.isEmpty ||
+        cantidadDisponibleCtrl.text.isEmpty ||
+        codigoCtrl.text.isEmpty) {
+      mostrarMensaje("Completa los campos obligatorios del lote");
+      return;
+    }
+
+    final cantidadInicial = int.tryParse(cantidadInicialCtrl.text);
+    final cantidadDisponible = int.tryParse(cantidadDisponibleCtrl.text);
+
+    if (cantidadInicial == null || cantidadDisponible == null) {
+      mostrarMensaje("Las cantidades del lote deben ser números válidos");
+      return;
+    }
+
+    if (cantidadDisponible > cantidadInicial) {
+      mostrarMensaje(
+        "La cantidad disponible no puede ser mayor que la inicial",
+      );
+      return;
+    }
+
+    try {
+      await medicamentoController.guardarLoteAMedicamentoExistente(
+        idMedicamento: medicamentoLoteSeleccionado!.id!,
+        numeroLote: loteCtrl.text.trim(),
+        fechaFabricacion: fechaFabCtrl.text.trim(),
+        fechaVencimiento: fechaVenCtrl.text.trim(),
+        cantidadInicial: cantidadInicial,
+        cantidadDisponible: cantidadDisponible,
+        codigoBarras: codigoCtrl.text.trim(),
+      );
+
+      mostrarMensaje("Lote agregado correctamente");
+
+      loteCtrl.clear();
+      fechaFabCtrl.clear();
+      fechaVenCtrl.clear();
+      cantidadInicialCtrl.clear();
+      cantidadDisponibleCtrl.clear();
+      codigoCtrl.clear();
+
+      setState(() {
+        medicamentoLoteSeleccionado = null;
+        cargando = true;
+      });
+
+      await cargarMedicamentos();
+    } catch (e) {
+      mostrarMensaje("Error al agregar lote: $e");
+    }
+  }
+
   Future<void> guardarTemperatura() async {
     final incompleto =
         medicamentoSeleccionado == null ||
@@ -198,6 +265,14 @@ class _InventarioViewState extends State<InventarioView> {
     temperaturaCtrl.dispose();
     rangoMinCtrl.dispose();
     rangoMaxCtrl.dispose();
+
+    loteCtrl.dispose();
+    fechaFabCtrl.dispose();
+    fechaVenCtrl.dispose();
+    cantidadInicialCtrl.dispose();
+    cantidadDisponibleCtrl.dispose();
+    codigoCtrl.dispose();
+
     super.dispose();
   }
 
@@ -236,6 +311,48 @@ class _InventarioViewState extends State<InventarioView> {
                             );
                           }).toList(),
                         ),
+
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    "Agregar lote a medicamento existente",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<MedicamentoModel>(
+                    value: medicamentoLoteSeleccionado,
+                    decoration: const InputDecoration(
+                      labelText: "Medicamento",
+                      border: OutlineInputBorder(),
+                    ),
+                    items: medicamentos.where((m) => m.activo).map((m) {
+                      return DropdownMenuItem(value: m, child: Text(m.nombre));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        medicamentoLoteSeleccionado = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+                  campo("Número de lote", loteCtrl),
+                  campo("Fecha de fabricación", fechaFabCtrl),
+                  campo("Fecha de vencimiento", fechaVenCtrl),
+                  campo("Cantidad inicial", cantidadInicialCtrl),
+                  campo("Cantidad disponible", cantidadDisponibleCtrl),
+                  campo("Código de barras", codigoCtrl),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: guardarNuevoLote,
+                      child: const Text("Agregar lote"),
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
                   const Divider(),
