@@ -45,6 +45,12 @@ class _InventarioViewState extends State<InventarioView> {
   Future<void> cargarMedicamentos() async {
     try {
       final lista = await medicamentoDao.listarMedicamentos();
+
+      setState(() {
+        medicamentos = lista;
+        cargando = false;
+      });
+
       final lotes = await loteDao.listarLotes();
 
       for (var medicamento in lista) {
@@ -63,13 +69,24 @@ class _InventarioViewState extends State<InventarioView> {
       }
 
       for (var lote in lotes) {
-        final medicamento = lista.firstWhere((m) => m.id == lote.idMedicamento);
+        final encontrados = lista.where((m) => m.id == lote.idMedicamento);
+
+        if (encontrados.isEmpty) {
+          continue;
+        }
+
+        final medicamento = encontrados.first;
+        final fechaVencimiento = DateTime.tryParse(lote.fechaVencimiento);
+
+        if (fechaVencimiento == null) {
+          continue;
+        }
 
         await alertaController.generarAlertaVencimientoProximo(
           idMedicamento: lote.idMedicamento,
           idLote: lote.id!,
           nombreMedicamento: medicamento.nombre,
-          fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
+          fechaVencimiento: fechaVencimiento,
         );
 
         final mensajeVencido = await alertaController
@@ -77,7 +94,7 @@ class _InventarioViewState extends State<InventarioView> {
               idMedicamento: lote.idMedicamento,
               idLote: lote.id!,
               nombreMedicamento: medicamento.nombre,
-              fechaVencimiento: DateTime.parse(lote.fechaVencimiento),
+              fechaVencimiento: fechaVencimiento,
             );
 
         if (mensajeVencido != null) {
@@ -86,11 +103,6 @@ class _InventarioViewState extends State<InventarioView> {
           });
         }
       }
-
-      setState(() {
-        medicamentos = lista;
-        cargando = false;
-      });
     } catch (e) {
       setState(() {
         cargando = false;
