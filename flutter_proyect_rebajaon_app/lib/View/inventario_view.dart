@@ -23,6 +23,9 @@ class _InventarioViewState extends State<InventarioView> {
   List<MedicamentoModel> medicamentos = [];
   bool cargando = true;
 
+  String busquedaInventario = '';
+  final buscarInventarioCtrl = TextEditingController();
+
   MedicamentoModel? medicamentoSeleccionado;
   final temperaturaCtrl = TextEditingController();
   final rangoMinCtrl = TextEditingController();
@@ -54,18 +57,12 @@ class _InventarioViewState extends State<InventarioView> {
       final lotes = await loteDao.listarLotes();
 
       for (var medicamento in lista) {
-        final mensaje = await alertaController.generarAlertaStockMinimo(
+        await alertaController.generarAlertaStockMinimo(
           idMedicamento: medicamento.id!,
           nombreMedicamento: medicamento.nombre,
           stockActual: medicamento.stockActual,
           stockMinimo: medicamento.stockMinimo,
         );
-
-        if (mensaje != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            mostrarAlertaGrande(mensaje);
-          });
-        }
       }
 
       for (var lote in lotes) {
@@ -89,19 +86,12 @@ class _InventarioViewState extends State<InventarioView> {
           fechaVencimiento: fechaVencimiento,
         );
 
-        final mensajeVencido = await alertaController
-            .generarAlertaMedicamentoVencido(
-              idMedicamento: lote.idMedicamento,
-              idLote: lote.id!,
-              nombreMedicamento: medicamento.nombre,
-              fechaVencimiento: fechaVencimiento,
-            );
-
-        if (mensajeVencido != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            mostrarAlertaGrande(mensajeVencido);
-          });
-        }
+        await alertaController.generarAlertaMedicamentoVencido(
+          idMedicamento: lote.idMedicamento,
+          idLote: lote.id!,
+          nombreMedicamento: medicamento.nombre,
+          fechaVencimiento: fechaVencimiento,
+        );
       }
     } catch (e) {
       setState(() {
@@ -112,8 +102,59 @@ class _InventarioViewState extends State<InventarioView> {
     }
   }
 
+  List<MedicamentoModel> get medicamentosFiltrados {
+    final texto = busquedaInventario.trim().toLowerCase();
+
+    if (texto.isEmpty) {
+      return medicamentos;
+    }
+
+    return medicamentos.where((m) {
+      return m.nombre.toLowerCase().contains(texto) ||
+          m.principioActivo.toLowerCase().contains(texto) ||
+          m.presentacion.toLowerCase().contains(texto) ||
+          m.fabricante.toLowerCase().contains(texto);
+    }).toList();
+  }
+
   List<MedicamentoModel> get medicamentosRefrigerados {
     return medicamentos.where((m) => m.requiereRefrigeracion).toList();
+  }
+
+  Color colorEstadoStock(MedicamentoModel medicamento) {
+    if (medicamento.stockActual <= 0) {
+      return Colors.red;
+    }
+
+    if (medicamento.stockActual <= medicamento.stockMinimo) {
+      return Colors.orange;
+    }
+
+    return Colors.green;
+  }
+
+  IconData iconoEstadoStock(MedicamentoModel medicamento) {
+    if (medicamento.stockActual <= 0) {
+      return Icons.error;
+    }
+
+    if (medicamento.stockActual <= medicamento.stockMinimo) {
+      return Icons.warning;
+    }
+
+    return Icons.check_circle;
+  }
+
+  String textoEstadoStock(MedicamentoModel medicamento) {
+    if (medicamento.stockActual <= 0) {
+      return "Sin stock";
+    }
+
+    if (medicamento.stockActual <= medicamento.stockMinimo) {
+      return "Stock mínimo";
+    }
+
+    return "Disponible";
   }
 
   void mostrarMensaje(String mensaje) {
@@ -121,26 +162,6 @@ class _InventarioViewState extends State<InventarioView> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), duration: const Duration(seconds: 2)),
-    );
-  }
-
-  void mostrarAlertaGrande(String mensaje) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Alerta"),
-          content: Text(mensaje),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Aceptar"),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -156,8 +177,8 @@ class _InventarioViewState extends State<InventarioView> {
           title: const Text("Stock actualizado"),
           content: Text(
             stockSuperaMinimo
-                ? "El stock de ${medicamento.nombre} fue actualizado correctamente."
-                : "El stock de ${medicamento.nombre} fue actualizado",
+                ? "El stock de ${medicamento.nombre} fue actualizado correctamente. La alerta de stock mínimo quedó resuelta."
+                : "El stock de ${medicamento.nombre} fue actualizado, pero todavía está en stock mínimo.",
           ),
           actions: [
             TextButton(
@@ -283,9 +304,23 @@ class _InventarioViewState extends State<InventarioView> {
       );
 
       if (mensajeCadenaFrio != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          mostrarAlertaGrande(mensajeCadenaFrio);
-        });
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Alerta"),
+              content: Text(mensajeCadenaFrio),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Aceptar"),
+                ),
+              ],
+            );
+          },
+        );
       }
 
       final fueraDeRango = temperatura < rangoMin || temperatura > rangoMax;
@@ -321,8 +356,56 @@ class _InventarioViewState extends State<InventarioView> {
     );
   }
 
+  Widget etiquetaEstado(MedicamentoModel medicamento) {
+    final colorEstado = colorEstadoStock(medicamento);
+    final iconoEstado = iconoEstadoStock(medicamento);
+    final textoEstado = textoEstadoStock(medicamento);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorEstado.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorEstado),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(iconoEstado, size: 16, color: colorEstado),
+          const SizedBox(width: 6),
+          Text(
+            textoEstado,
+            style: TextStyle(color: colorEstado, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget tarjetaMedicamento(MedicamentoModel medicamento) {
+    return Card(
+      child: ListTile(
+        title: Row(
+          children: [
+            Expanded(child: Text(medicamento.nombre)),
+            etiquetaEstado(medicamento),
+          ],
+        ),
+        subtitle: Text(
+          "Presentación: ${medicamento.presentacion}\n"
+          "Fabricante: ${medicamento.fabricante}\n"
+          "Stock actual: ${medicamento.stockActual}\n"
+          "Stock mínimo: ${medicamento.stockMinimo}\n"
+          "Refrigeración: ${medicamento.requiereRefrigeracion ? "Sí" : "No"}",
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
+    buscarInventarioCtrl.dispose();
+
     temperaturaCtrl.dispose();
     rangoMinCtrl.dispose();
     rangoMaxCtrl.dispose();
@@ -348,29 +431,43 @@ class _InventarioViewState extends State<InventarioView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Inventario registrado",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          "Inventario registrado",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 320,
+                        child: TextField(
+                          controller: buscarInventarioCtrl,
+                          onChanged: (value) {
+                            setState(() {
+                              busquedaInventario = value;
+                            });
+                          },
+                          decoration: const InputDecoration(
+                            labelText: "Buscar medicamento",
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 12),
 
-                  medicamentos.isEmpty
+                  medicamentosFiltrados.isEmpty
                       ? const Text("No hay medicamentos registrados")
                       : Column(
-                          children: medicamentos.map((m) {
-                            return Card(
-                              child: ListTile(
-                                title: Text(m.nombre),
-                                subtitle: Text(
-                                  "Presentación: ${m.presentacion}\n"
-                                  "Fabricante: ${m.fabricante}\n"
-                                  "Stock actual: ${m.stockActual}\n"
-                                  "Stock mínimo: ${m.stockMinimo}\n"
-                                  "Refrigeración: ${m.requiereRefrigeracion ? "Sí" : "No"}",
-                                ),
-                              ),
-                            );
+                          children: medicamentosFiltrados.map((medicamento) {
+                            return tarjetaMedicamento(medicamento);
                           }).toList(),
                         ),
 
