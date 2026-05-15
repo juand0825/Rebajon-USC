@@ -44,19 +44,35 @@ class AlertaController {
   }) async {
     if (stockActual > stockMinimo) return null;
 
+    final esCritico = stockActual <= 0;
+    final nivelGravedad = esCritico ? 'CRITICO' : 'ADVERTENCIA';
+
+    final mensaje = esCritico
+        ? 'El medicamento $nombreMedicamento se quedó sin stock.'
+        : 'El medicamento $nombreMedicamento alcanzó el stock mínimo.';
+
     final yaExiste = await alertaDao.existeAlertaActiva(
       idMedicamento: idMedicamento,
       tipo: 'STOCK_MINIMO',
     );
 
-    if (yaExiste) return null;
+    if (yaExiste) {
+      await alertaDao.actualizarAlertaActiva(
+        idMedicamento: idMedicamento,
+        tipo: 'STOCK_MINIMO',
+        nivelGravedad: nivelGravedad,
+        mensaje: mensaje,
+      );
+
+      return null;
+    }
 
     final alerta = AlertaModel(
       idMedicamento: idMedicamento,
       idLote: null,
       tipo: 'STOCK_MINIMO',
-      nivelGravedad: 'ADVERTENCIA',
-      mensaje: 'El medicamento $nombreMedicamento alcanzó el stock mínimo.',
+      nivelGravedad: nivelGravedad,
+      mensaje: mensaje,
       resulta: false,
     );
 
@@ -124,5 +140,18 @@ class AlertaController {
 
     await alertaDao.insertarAlerta(alerta);
     return alerta.mensaje;
+  }
+
+  Future<void> resolverAlertaStockMinimoSiCorresponde({
+    required int idMedicamento,
+    required int stockActual,
+    required int stockMinimo,
+  }) async {
+    if (stockActual > stockMinimo) {
+      await alertaDao.resolverAlertasActivas(
+        idMedicamento: idMedicamento,
+        tipo: 'STOCK_MINIMO',
+      );
+    }
   }
 }

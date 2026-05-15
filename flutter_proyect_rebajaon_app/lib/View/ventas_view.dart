@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../Controllers/ventas_controller.dart';
+import '../Controllers/auth_controller.dart';
 import '../models/scanner_model.dart';
 
 class VentasView extends StatefulWidget {
@@ -24,7 +26,7 @@ class _VentasViewState extends State<VentasView> {
   }
 
   // ==========================================
-  // BUSCAR MEDICAMENTO POR CÓDIGO
+  // BUSCAR MEDICAMENTO POR CÓDIGO DE BARRAS
   // ==========================================
   Future<void> buscarMedicamento() async {
     final codigo = codigoCtrl.text.trim();
@@ -79,7 +81,7 @@ class _VentasViewState extends State<VentasView> {
   }
 
   // ==========================================
-  // DIÁLOGO DE DETALLES
+  // DIÁLOGO DE MEDICAMENTO ENCONTRADO
   // ==========================================
   Future<void> _mostrarDialogoMedicamento(ScannerModel medicamento) async {
     await showDialog(
@@ -118,10 +120,15 @@ class _VentasViewState extends State<VentasView> {
           ),
           ElevatedButton(
             onPressed: () {
-              controller.agregarAlCarrito(medicamento);
+              final mensaje = controller.agregarAlCarrito(medicamento);
+
               Navigator.pop(context);
 
-              _mostrarMensaje('${medicamento.nombre} agregado al carrito');
+              if (mensaje != null) {
+                _mostrarMensaje(mensaje);
+              } else {
+                _mostrarMensaje('${medicamento.nombre} agregado al carrito');
+              }
 
               setState(() {});
             },
@@ -141,16 +148,44 @@ class _VentasViewState extends State<VentasView> {
       return;
     }
 
+    final auth = context.read<AuthController>();
+    final idUsuario = auth.idUsuarioActual;
+
+    if (idUsuario == null) {
+      _mostrarMensaje('No se encontró el usuario en sesión');
+      return;
+    }
+
     try {
-      await controller.finalizarVenta();
+      final avisosStock = await controller.finalizarVenta(idUsuario: idUsuario);
 
       setState(() {
         resultadosBusqueda = [];
       });
 
-      _mostrarMensaje('Venta realizada correctamente');
+      if (avisosStock.isNotEmpty) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Alerta de inventario'),
+              content: Text(avisosStock.join('\n\n')),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Aceptar'),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        _mostrarMensaje('Venta realizada correctamente');
+      }
     } catch (e) {
-      _mostrarMensaje('Error al finalizar la venta');
+      _mostrarMensaje(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -173,12 +208,72 @@ class _VentasViewState extends State<VentasView> {
   }
 
   // ==========================================
+  // AGREGAR UNA UNIDAD
+  // ==========================================
+  Future<void> agregarUnaUnidad(int index) async {
+    final item = controller.carrito[index];
+
+    final medicamento = await controller.buscarMedicamento(item.codigoBarras);
+
+    if (medicamento == null) {
+      _mostrarMensaje('No se encontró el medicamento');
+      return;
+    }
+
+    final mensaje = controller.agregarAlCarrito(medicamento);
+
+    if (mensaje != null) {
+      _mostrarMensaje(mensaje);
+    }
+
+    setState(() {});
+  }
+
+  // ==========================================
   // MENSAJES
   // ==========================================
   void _mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), duration: const Duration(seconds: 1)),
+    );
+  }
+
+  // ==========================================
+  // ACTUALIZAR STOCK VISUALMENTE
+  // ==========================================
+  List<ScannerModel> _obtenerMedicamentosConStockActualizado(
+    List<ScannerModel> medicamentos,
+  ) {
+    return medicamentos.map((med) {
+      int cantidadEnCarrito = 0;
+
+      for (final item in controller.carrito) {
+        if (item.codigoBarras == med.codigoBarras) {
+          cantidadEnCarrito = item.cantidad;
+          break;
+        }
+      }
+
+      return ScannerModel(
+        idLote: med.idLote,
+        idMedicamento: med.idMedicamento,
+        nombre: med.nombre,
+        codigoBarras: med.codigoBarras,
+        precio: med.precio,
+        stockMinimo: med.stockMinimo,
+        cantidadDisponible: med.cantidadDisponible - cantidadEnCarrito,
+        activo: med.activo,
+        fechaVencimiento: med.fechaVencimiento,
+        principioActivo: med.principioActivo,
+        presentacion: med.presentacion,
+        fabricante: med.fabricante,
+        numeroLote: med.numeroLote,
+        stockActual: med.stockActual,
+        requiereRefrigeracion: med.requiereRefrigeracion,
+      );
+    }).toList();
   }
 
   // ==========================================
@@ -186,7 +281,9 @@ class _VentasViewState extends State<VentasView> {
   // ==========================================
   Widget _buildListaMedicamentos() {
     if (resultadosBusqueda.isNotEmpty) {
-      return _buildLista(resultadosBusqueda);
+      return _buildLista(
+        _obtenerMedicamentosConStockActualizado(resultadosBusqueda),
+      );
     }
 
     return FutureBuilder<List<ScannerModel>>(
@@ -196,7 +293,9 @@ class _VentasViewState extends State<VentasView> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final medicamentos = snapshot.data!;
+        final medicamentos = _obtenerMedicamentosConStockActualizado(
+          snapshot.data!,
+        );
 
         if (medicamentos.isEmpty) {
           return const Center(child: Text('No hay medicamentos disponibles'));
@@ -225,7 +324,25 @@ class _VentasViewState extends State<VentasView> {
               ),
             ),
             onTap: () async {
-              await _mostrarDialogoMedicamento(med);
+              // Buscar el stock real en la base de datos
+              final medicamentoReal = await controller.buscarMedicamento(
+                med.codigoBarras,
+              );
+
+              if (medicamentoReal == null) {
+                _mostrarMensaje('No se encontró el medicamento');
+                return;
+              }
+
+              final mensaje = controller.agregarAlCarrito(medicamentoReal);
+
+              if (mensaje != null) {
+                _mostrarMensaje(mensaje);
+              } else {
+                _mostrarMensaje('${med.nombre} agregado al carrito');
+              }
+
+              setState(() {});
             },
           ),
         );
@@ -344,6 +461,14 @@ class _VentasViewState extends State<VentasView> {
                               ),
                               onPressed: () => quitarUnaUnidad(index),
                             ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.add_circle,
+                                color: Colors.green,
+                              ),
+                              onPressed: () => agregarUnaUnidad(index),
+                            ),
+                            const SizedBox(width: 8),
                             Text('\$${item.subtotal.toStringAsFixed(2)}'),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),

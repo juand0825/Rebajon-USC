@@ -84,4 +84,26 @@ class MedicamentoController {
 
     await loteDao.insertarLote(lote);
   }
+
+  Future<void> guardarLoteAMedicamentoExistente({
+    required int idMedicamento,
+    required String numeroLote,
+    required String fechaFabricacion,
+    required String fechaVencimiento,
+    required int cantidadInicial,
+    required int cantidadDisponible,
+    required String codigoBarras,
+  }) async {
+    final lote = LoteModel(
+      idMedicamento: idMedicamento,
+      numeroLote: numeroLote,
+      fechaFabricacion: fechaFabricacion,
+      fechaVencimiento: fechaVencimiento,
+      cantidadInicial: cantidadInicial,
+      cantidadDisponible: cantidadDisponible,
+      codigoBarras: codigoBarras,
+    );
+
+    await loteDao.insertarLote(lote);
+  }
 }
