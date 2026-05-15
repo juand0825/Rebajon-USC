@@ -156,8 +156,8 @@ class _InventarioViewState extends State<InventarioView> {
           title: const Text("Stock actualizado"),
           content: Text(
             stockSuperaMinimo
-                ? "El stock de ${medicamento.nombre} fue actualizado correctamente. La alerta de stock mínimo quedó resuelta."
-                : "El stock de ${medicamento.nombre} fue actualizado, pero todavía está en stock mínimo.",
+                ? "El stock de ${medicamento.nombre} fue actualizado correctamente."
+                : "El stock de ${medicamento.nombre} fue actualizado",
           ),
           actions: [
             TextButton(

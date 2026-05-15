@@ -45,7 +45,6 @@ class AlertaController {
     if (stockActual > stockMinimo) return null;
 
     final esCritico = stockActual <= 0;
-
     final nivelGravedad = esCritico ? 'CRITICO' : 'ADVERTENCIA';
 
     final mensaje = esCritico
@@ -65,7 +64,7 @@ class AlertaController {
         mensaje: mensaje,
       );
 
-      return mensaje;
+      return null;
     }
 
     final alerta = AlertaModel(
