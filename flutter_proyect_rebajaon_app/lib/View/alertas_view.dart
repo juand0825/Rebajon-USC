@@ -24,6 +24,7 @@ class _AlertasViewState extends State<AlertasView> {
   Future<void> cargarAlertas() async {
     try {
       final lista = await alertaDao.listarAlertas();
+
       setState(() {
         alertas = lista;
         cargando = false;
@@ -39,7 +40,43 @@ class _AlertasViewState extends State<AlertasView> {
     }
   }
 
-  Color colorGravedad(AlertaModel alerta) {
+  String formatearTipo(String tipo) {
+    switch (tipo) {
+      case 'STOCK_MINIMO':
+        return 'Stock mínimo';
+      case 'VENCIMIENTO_PROXIMO':
+        return 'Vencimiento próximo';
+      case 'MEDICAMENTO_VENCIDO':
+        return 'Medicamento vencido';
+      case 'CADENA_FRIO':
+        return 'Cadena de frío';
+      default:
+        return tipo.replaceAll('_', ' ');
+    }
+  }
+
+  String textoGravedad(AlertaModel alerta) {
+    if (alerta.resulta) {
+      return 'Correcto';
+    }
+
+    switch (alerta.nivelGravedad) {
+      case 'CRITICO':
+        return 'Crítico';
+      case 'ADVERTENCIA':
+        return 'Advertencia';
+      case 'INFO':
+        return 'Información';
+      default:
+        return alerta.nivelGravedad;
+    }
+  }
+
+  String textoEstado(AlertaModel alerta) {
+    return alerta.resulta ? 'Resuelta' : 'Pendiente';
+  }
+
+  Color colorAlerta(AlertaModel alerta) {
     if (alerta.resulta) {
       return Colors.green;
     }
@@ -51,6 +88,21 @@ class _AlertasViewState extends State<AlertasView> {
         return const Color.fromARGB(255, 255, 153, 0);
       default:
         return const Color.fromARGB(255, 0, 117, 212);
+    }
+  }
+
+  IconData iconoAlerta(AlertaModel alerta) {
+    if (alerta.resulta) {
+      return Icons.check_circle;
+    }
+
+    switch (alerta.nivelGravedad) {
+      case 'CRITICO':
+        return Icons.error;
+      case 'ADVERTENCIA':
+        return Icons.warning;
+      default:
+        return Icons.info;
     }
   }
 
@@ -66,19 +118,25 @@ class _AlertasViewState extends State<AlertasView> {
               itemCount: alertas.length,
               itemBuilder: (context, index) {
                 final alerta = alertas[index];
+                final color = colorAlerta(alerta);
 
                 return Card(
-                  color: colorGravedad(alerta),
+                  color: color.withOpacity(0.90),
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
+                    leading: Icon(iconoAlerta(alerta), color: Colors.white),
                     title: Text(
-                      alerta.tipo,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      formatearTipo(alerta.tipo),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                     subtitle: Text(
-                      "Gravedad: ${alerta.nivelGravedad}\n"
+                      "Gravedad: ${textoGravedad(alerta)}\n"
                       "Mensaje: ${alerta.mensaje}\n"
-                      "Resulta: ${alerta.resulta ? "Sí" : "No"}",
+                      "Estado: ${textoEstado(alerta)}",
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 );
