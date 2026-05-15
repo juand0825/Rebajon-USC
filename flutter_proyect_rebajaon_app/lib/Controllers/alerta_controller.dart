@@ -125,4 +125,17 @@ class AlertaController {
     await alertaDao.insertarAlerta(alerta);
     return alerta.mensaje;
   }
+
+  Future<void> resolverAlertaStockMinimoSiCorresponde({
+    required int idMedicamento,
+    required int stockActual,
+    required int stockMinimo,
+  }) async {
+    if (stockActual > stockMinimo) {
+      await alertaDao.resolverAlertasActivas(
+        idMedicamento: idMedicamento,
+        tipo: 'STOCK_MINIMO',
+      );
+    }
+  }
 }

@@ -117,9 +117,11 @@ class _InventarioViewState extends State<InventarioView> {
   }
 
   void mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), duration: const Duration(seconds: 2)),
+    );
   }
 
   void mostrarAlertaGrande(String mensaje) {
@@ -129,6 +131,34 @@ class _InventarioViewState extends State<InventarioView> {
         return AlertDialog(
           title: const Text("Alerta"),
           content: Text(mensaje),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> mostrarDialogoStockActualizado(
+    MedicamentoModel medicamento,
+  ) async {
+    final stockSuperaMinimo = medicamento.stockActual > medicamento.stockMinimo;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Stock actualizado"),
+          content: Text(
+            stockSuperaMinimo
+                ? "El stock de ${medicamento.nombre} fue actualizado correctamente. La alerta de stock mínimo quedó resuelta."
+                : "El stock de ${medicamento.nombre} fue actualizado, pero todavía está en stock mínimo.",
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -169,8 +199,10 @@ class _InventarioViewState extends State<InventarioView> {
     }
 
     try {
+      final idMedicamento = medicamentoLoteSeleccionado!.id!;
+
       await medicamentoController.guardarLoteAMedicamentoExistente(
-        idMedicamento: medicamentoLoteSeleccionado!.id!,
+        idMedicamento: idMedicamento,
         numeroLote: loteCtrl.text.trim(),
         fechaFabricacion: fechaFabCtrl.text.trim(),
         fechaVencimiento: fechaVenCtrl.text.trim(),
@@ -179,7 +211,21 @@ class _InventarioViewState extends State<InventarioView> {
         codigoBarras: codigoCtrl.text.trim(),
       );
 
-      mostrarMensaje("Lote agregado correctamente");
+      final medicamentoActualizado = await medicamentoDao.buscarPorId(
+        idMedicamento,
+      );
+
+      if (medicamentoActualizado != null) {
+        await alertaController.resolverAlertaStockMinimoSiCorresponde(
+          idMedicamento: medicamentoActualizado.id!,
+          stockActual: medicamentoActualizado.stockActual,
+          stockMinimo: medicamentoActualizado.stockMinimo,
+        );
+
+        await mostrarDialogoStockActualizado(medicamentoActualizado);
+      } else {
+        mostrarMensaje("Lote agregado correctamente");
+      }
 
       loteCtrl.clear();
       fechaFabCtrl.clear();
@@ -253,7 +299,10 @@ class _InventarioViewState extends State<InventarioView> {
       temperaturaCtrl.clear();
       rangoMinCtrl.clear();
       rangoMaxCtrl.clear();
-      setState(() => medicamentoSeleccionado = null);
+
+      setState(() {
+        medicamentoSeleccionado = null;
+      });
     } catch (e) {
       mostrarMensaje("Error al guardar temperatura: $e");
     }
@@ -303,6 +352,7 @@ class _InventarioViewState extends State<InventarioView> {
                     "Inventario registrado",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+
                   const SizedBox(height: 12),
 
                   medicamentos.isEmpty
@@ -332,6 +382,7 @@ class _InventarioViewState extends State<InventarioView> {
                     "Agregar lote a medicamento existente",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+
                   const SizedBox(height: 12),
 
                   DropdownButtonFormField<MedicamentoModel>(
@@ -374,6 +425,7 @@ class _InventarioViewState extends State<InventarioView> {
                     "Registro de temperatura",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+
                   const SizedBox(height: 12),
 
                   DropdownButtonFormField<MedicamentoModel>(

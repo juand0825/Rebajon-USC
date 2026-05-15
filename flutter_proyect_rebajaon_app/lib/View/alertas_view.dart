@@ -39,8 +39,12 @@ class _AlertasViewState extends State<AlertasView> {
     }
   }
 
-  Color colorGravedad(String nivel) {
-    switch (nivel) {
+  Color colorGravedad(AlertaModel alerta) {
+    if (alerta.resulta) {
+      return Colors.green;
+    }
+
+    switch (alerta.nivelGravedad) {
       case 'CRITICO':
         return const Color.fromARGB(193, 244, 0, 24);
       case 'ADVERTENCIA':
@@ -64,7 +68,7 @@ class _AlertasViewState extends State<AlertasView> {
                 final alerta = alertas[index];
 
                 return Card(
-                  color: colorGravedad(alerta.nivelGravedad),
+                  color: colorGravedad(alerta),
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
                     title: Text(

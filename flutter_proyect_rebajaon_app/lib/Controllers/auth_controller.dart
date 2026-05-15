@@ -5,10 +5,13 @@ class AuthController extends ChangeNotifier {
   bool cargando = false;
   String? error;
   bool registrado = false;
+
+  int? idUsuarioActual;
   String? rolActual;
   String? emailActual;
 
   final UsuarioDao _dao = UsuarioDao();
+
   Future<void> register(
     String email,
     String clave,
@@ -20,6 +23,7 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return;
     }
+
     if (numIdentificacion.length != 10) {
       error = "El número de identificación debe tener 10 dígitos";
       notifyListeners();
@@ -37,6 +41,7 @@ class AuthController extends ChangeNotifier {
     } catch (e) {
       error = "Error al registrar: $e";
     }
+
     cargando = false;
     notifyListeners();
   }
@@ -54,9 +59,12 @@ class AuthController extends ChangeNotifier {
 
     try {
       final usuario = await _dao.login(email, clave);
+
       if (usuario != null) {
+        idUsuarioActual = usuario.id;
         rolActual = usuario.rol;
         emailActual = usuario.email;
+
         cargando = false;
         notifyListeners();
         return true;
@@ -78,7 +86,9 @@ class AuthController extends ChangeNotifier {
     registrado = false;
     notifyListeners();
   }
+
   void cerrarSesion() {
+    idUsuarioActual = null;
     rolActual = null;
     emailActual = null;
     notifyListeners();

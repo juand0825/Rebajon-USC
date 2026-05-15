@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../Controllers/ventas_controller.dart';
+import '../Controllers/auth_controller.dart';
 import '../models/scanner_model.dart';
 
 class VentasView extends StatefulWidget {
@@ -81,9 +83,7 @@ class _VentasViewState extends State<VentasView> {
   // ==========================================
   // DIÁLOGO DE MEDICAMENTO ENCONTRADO
   // ==========================================
-  Future<void> _mostrarDialogoMedicamento(
-    ScannerModel medicamento,
-  ) async {
+  Future<void> _mostrarDialogoMedicamento(ScannerModel medicamento) async {
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -95,29 +95,19 @@ class _VentasViewState extends State<VentasView> {
             children: [
               Text('Nombre comercial: ${medicamento.nombre}'),
               const SizedBox(height: 8),
-              Text(
-                'Precio: \$${medicamento.precio.toStringAsFixed(2)}',
-              ),
+              Text('Precio: \$${medicamento.precio.toStringAsFixed(2)}'),
               const SizedBox(height: 8),
-              Text(
-                'Principio activo: ${medicamento.principioActivo}',
-              ),
+              Text('Principio activo: ${medicamento.principioActivo}'),
               const SizedBox(height: 8),
               Text('Presentación: ${medicamento.presentacion}'),
               const SizedBox(height: 8),
-              Text(
-                'Laboratorio/Fabricante: ${medicamento.fabricante}',
-              ),
+              Text('Laboratorio/Fabricante: ${medicamento.fabricante}'),
               const SizedBox(height: 8),
               Text('Lote: ${medicamento.numeroLote}'),
               const SizedBox(height: 8),
-              Text(
-                'Fecha de vencimiento: ${medicamento.fechaVencimiento}',
-              ),
+              Text('Fecha de vencimiento: ${medicamento.fechaVencimiento}'),
               const SizedBox(height: 8),
-              Text(
-                'Stock disponible: ${medicamento.cantidadDisponible}',
-              ),
+              Text('Stock disponible: ${medicamento.cantidadDisponible}'),
             ],
           ),
         ),
@@ -130,17 +120,14 @@ class _VentasViewState extends State<VentasView> {
           ),
           ElevatedButton(
             onPressed: () {
-              final mensaje =
-                  controller.agregarAlCarrito(medicamento);
+              final mensaje = controller.agregarAlCarrito(medicamento);
 
               Navigator.pop(context);
 
               if (mensaje != null) {
                 _mostrarMensaje(mensaje);
               } else {
-                _mostrarMensaje(
-                  '${medicamento.nombre} agregado al carrito',
-                );
+                _mostrarMensaje('${medicamento.nombre} agregado al carrito');
               }
 
               setState(() {});
@@ -161,16 +148,44 @@ class _VentasViewState extends State<VentasView> {
       return;
     }
 
+    final auth = context.read<AuthController>();
+    final idUsuario = auth.idUsuarioActual;
+
+    if (idUsuario == null) {
+      _mostrarMensaje('No se encontró el usuario en sesión');
+      return;
+    }
+
     try {
-      await controller.finalizarVenta();
+      final avisosStock = await controller.finalizarVenta(idUsuario: idUsuario);
 
       setState(() {
         resultadosBusqueda = [];
       });
 
-      _mostrarMensaje('Venta realizada correctamente');
+      if (avisosStock.isNotEmpty) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Alerta de inventario'),
+              content: Text(avisosStock.join('\n\n')),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Aceptar'),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        _mostrarMensaje('Venta realizada correctamente');
+      }
     } catch (e) {
-      _mostrarMensaje('Error al finalizar la venta: $e');
+      _mostrarMensaje(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -198,9 +213,7 @@ class _VentasViewState extends State<VentasView> {
   Future<void> agregarUnaUnidad(int index) async {
     final item = controller.carrito[index];
 
-    final medicamento = await controller.buscarMedicamento(
-      item.codigoBarras,
-    );
+    final medicamento = await controller.buscarMedicamento(item.codigoBarras);
 
     if (medicamento == null) {
       _mostrarMensaje('No se encontró el medicamento');
@@ -220,8 +233,10 @@ class _VentasViewState extends State<VentasView> {
   // MENSAJES
   // ==========================================
   void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
+      SnackBar(content: Text(mensaje), duration: const Duration(seconds: 1)),
     );
   }
 
@@ -248,8 +263,7 @@ class _VentasViewState extends State<VentasView> {
         codigoBarras: med.codigoBarras,
         precio: med.precio,
         stockMinimo: med.stockMinimo,
-        cantidadDisponible:
-            med.cantidadDisponible - cantidadEnCarrito,
+        cantidadDisponible: med.cantidadDisponible - cantidadEnCarrito,
         activo: med.activo,
         fechaVencimiento: med.fechaVencimiento,
         principioActivo: med.principioActivo,
@@ -268,9 +282,7 @@ class _VentasViewState extends State<VentasView> {
   Widget _buildListaMedicamentos() {
     if (resultadosBusqueda.isNotEmpty) {
       return _buildLista(
-        _obtenerMedicamentosConStockActualizado(
-          resultadosBusqueda,
-        ),
+        _obtenerMedicamentosConStockActualizado(resultadosBusqueda),
       );
     }
 
@@ -278,20 +290,15 @@ class _VentasViewState extends State<VentasView> {
       future: controller.scannerDao.listarMedicamentosDisponibles(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
-        final medicamentos =
-            _obtenerMedicamentosConStockActualizado(
+        final medicamentos = _obtenerMedicamentosConStockActualizado(
           snapshot.data!,
         );
 
         if (medicamentos.isEmpty) {
-          return const Center(
-            child: Text('No hay medicamentos disponibles'),
-          );
+          return const Center(child: Text('No hay medicamentos disponibles'));
         }
 
         return _buildLista(medicamentos);
@@ -308,9 +315,7 @@ class _VentasViewState extends State<VentasView> {
         return Card(
           child: ListTile(
             title: Text(med.nombre),
-            subtitle: Text(
-              'Stock: ${med.cantidadDisponible}',
-            ),
+            subtitle: Text('Stock: ${med.cantidadDisponible}'),
             trailing: Text(
               '\$${med.precio.toStringAsFixed(2)}',
               style: const TextStyle(
@@ -320,29 +325,21 @@ class _VentasViewState extends State<VentasView> {
             ),
             onTap: () async {
               // Buscar el stock real en la base de datos
-              final medicamentoReal =
-                  await controller.buscarMedicamento(
+              final medicamentoReal = await controller.buscarMedicamento(
                 med.codigoBarras,
               );
 
               if (medicamentoReal == null) {
-                _mostrarMensaje(
-                  'No se encontró el medicamento',
-                );
+                _mostrarMensaje('No se encontró el medicamento');
                 return;
               }
 
-              final mensaje =
-                  controller.agregarAlCarrito(
-                medicamentoReal,
-              );
+              final mensaje = controller.agregarAlCarrito(medicamentoReal);
 
               if (mensaje != null) {
                 _mostrarMensaje(mensaje);
               } else {
-                _mostrarMensaje(
-                  '${med.nombre} agregado al carrito',
-                );
+                _mostrarMensaje('${med.nombre} agregado al carrito');
               }
 
               setState(() {});
@@ -366,10 +363,7 @@ class _VentasViewState extends State<VentasView> {
           children: [
             const Text(
               'Buscar medicamento',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 16),
@@ -404,24 +398,17 @@ class _VentasViewState extends State<VentasView> {
 
             const Text(
               'Medicamentos disponibles',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
 
-            Expanded(
-              child: _buildListaMedicamentos(),
-            ),
+            Expanded(child: _buildListaMedicamentos()),
 
             if (cargando)
               const Padding(
                 padding: EdgeInsets.all(16),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: Center(child: CircularProgressIndicator()),
               ),
           ],
         ),
@@ -442,19 +429,14 @@ class _VentasViewState extends State<VentasView> {
           children: [
             const Text(
               'Carrito de compras',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 16),
 
             if (controller.carrito.isEmpty)
               const Expanded(
-                child: Center(
-                  child: Text('El carrito está vacío'),
-                ),
+                child: Center(child: Text('El carrito está vacío')),
               )
             else
               Expanded(
@@ -477,28 +459,20 @@ class _VentasViewState extends State<VentasView> {
                                 Icons.remove_circle,
                                 color: Colors.orange,
                               ),
-                              onPressed: () =>
-                                  quitarUnaUnidad(index),
+                              onPressed: () => quitarUnaUnidad(index),
                             ),
                             IconButton(
                               icon: const Icon(
                                 Icons.add_circle,
                                 color: Colors.green,
                               ),
-                              onPressed: () =>
-                                  agregarUnaUnidad(index),
+                              onPressed: () => agregarUnaUnidad(index),
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              '\$${item.subtotal.toStringAsFixed(2)}',
-                            ),
+                            Text('\$${item.subtotal.toStringAsFixed(2)}'),
                             IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                              ),
-                              onPressed: () =>
-                                  eliminarItem(index),
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => eliminarItem(index),
                             ),
                           ],
                         ),
@@ -544,23 +518,15 @@ class _VentasViewState extends State<VentasView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ventas'),
-      ),
+      appBar: AppBar(title: const Text('Ventas')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              flex: 2,
-              child: _buildBuscador(),
-            ),
+            Expanded(flex: 2, child: _buildBuscador()),
             const SizedBox(width: 16),
-            Expanded(
-              flex: 3,
-              child: _buildCarrito(),
-            ),
+            Expanded(flex: 3, child: _buildCarrito()),
           ],
         ),
       ),

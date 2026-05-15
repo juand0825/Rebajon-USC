@@ -3,6 +3,8 @@ import '../models/ventas_model.dart';
 
 class VentaDao {
   Future<int> registrarVenta({
+    required int idUsuario,
+    required int idCarrito,
     required double total,
     required List<VentaItemModel> items,
   }) async {
@@ -10,10 +12,10 @@ class VentaDao {
 
     await conn.execute(
       '''
-      INSERT INTO ventas (total, estado)
-      VALUES (:total, 'completada')
+      INSERT INTO ventas (id_usuario, id_carrito, total, estado)
+      VALUES (:id_usuario, :id_carrito, :total, 'completada')
       ''',
-      {'total': total},
+      {'id_usuario': idUsuario, 'id_carrito': idCarrito, 'total': total},
     );
 
     final result = await conn.execute('SELECT LAST_INSERT_ID() AS id');

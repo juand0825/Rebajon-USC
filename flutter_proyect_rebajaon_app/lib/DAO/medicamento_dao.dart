@@ -115,4 +115,24 @@ class MedicamentoDao {
 
     return MedicamentoModel.fromMap(result.rows.first.assoc());
   }
+
+  Future<MedicamentoModel?> buscarPorId(int id) async {
+    final conn = await DbConnection.getConnection();
+
+    final result = await conn.execute(
+      '''
+    SELECT *
+    FROM medicamentos
+    WHERE id = :id
+    LIMIT 1
+    ''',
+      {'id': id},
+    );
+
+    if (result.rows.isEmpty) {
+      return null;
+    }
+
+    return MedicamentoModel.fromMap(result.rows.first.assoc());
+  }
 }
