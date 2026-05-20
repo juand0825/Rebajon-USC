@@ -1,4 +1,3 @@
-// Este archivo le dice a FLUTTER como organizar los datos del usuario
 class UsuarioModel {
   final int id;
   final String email;
@@ -13,11 +12,11 @@ class UsuarioModel {
   });
 
   factory UsuarioModel.fromMap(Map<String, dynamic> map) {
-    return UsuarioModel (
+    return UsuarioModel(
       id: int.parse(map['id'].toString()),
-      email: map['email'],
-      rol: map['rol'],
-      numIdentificacion: map['numIdentificacion']
+      email: map['email'].toString(),
+      rol: map['rol'].toString(),
+      numIdentificacion: map['numIdentificacion'].toString(),
     );
   }
 }

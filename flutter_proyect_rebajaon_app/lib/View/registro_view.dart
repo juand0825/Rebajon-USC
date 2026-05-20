@@ -196,7 +196,7 @@ class _RegistroViewState extends State<RegistroView> {
                     height: 48,
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text("Volver al login"),
+                      child: const Text("Volver al panel de inicio"),
                     ),
                   ),
                 ],

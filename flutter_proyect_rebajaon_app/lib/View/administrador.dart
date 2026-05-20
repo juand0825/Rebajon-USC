@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../Controllers/auth_controller.dart';
 import 'login_view.dart';
 import 'registro_view.dart';
@@ -15,10 +16,12 @@ class HomeAdminView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
         automaticallyImplyLeading: false,
+
         title: Row(
           children: [
             CircleAvatar(
@@ -40,24 +43,52 @@ class HomeAdminView extends StatelessWidget {
             ),
           ],
         ),
+
+        // BOTÓN CERRAR SESIÓN EN LA PARTE SUPERIOR DERECHA
         actions: [
-          TextButton.icon(
-            onPressed: () {
-              auth.cerrarSesion();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginView()),
-              );
-            },
+          IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),
-            label: const Text(
-              "Cerrar sesión",
-              style: TextStyle(color: Colors.red),
-            ),
+            tooltip: "Cerrar sesión",
+            onPressed: () async {
+              final confirmar = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Cerrar sesión"),
+                  content: const Text(
+                    "¿Estás seguro de que deseas cerrar sesión?",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context, false);
+                      },
+                      child: const Text("Cancelar"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context, true);
+                      },
+                      child: const Text("Cerrar sesión"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmar == true && context.mounted) {
+                auth.cerrarSesion();
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginView()),
+                  (route) => false,
+                );
+              }
+            },
           ),
           const SizedBox(width: 8),
         ],
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: GridView.count(

@@ -46,8 +46,9 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String email, String clave) async {
-    if (email.isEmpty || clave.isEmpty) {
+  // LOGIN CON NÚMERO DE DOCUMENTO Y CLAVE
+  Future<bool> login(String numIdentificacion, String clave) async {
+    if (numIdentificacion.isEmpty || clave.isEmpty) {
       error = "Por favor completa todos los campos";
       notifyListeners();
       return false;
@@ -58,7 +59,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final usuario = await _dao.login(email, clave);
+      final usuario = await _dao.login(numIdentificacion, clave);
 
       if (usuario != null) {
         idUsuarioActual = usuario.id;
@@ -69,7 +70,7 @@ class AuthController extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        error = "No estás registrado, por favor regístrate";
+        error = "Documento o contraseña incorrectos";
         cargando = false;
         notifyListeners();
         return false;
