@@ -24,11 +24,13 @@ class ReporteVentaProductoModel {
   final String medicamento;
   final int cantidadVendida;
   final double totalVendido;
+  final String fecha;
 
   ReporteVentaProductoModel({
     required this.medicamento,
     required this.cantidadVendida,
     required this.totalVendido,
+    required this.fecha,
   });
 
   factory ReporteVentaProductoModel.fromMap(Map<String, dynamic> map) {
@@ -36,6 +38,7 @@ class ReporteVentaProductoModel {
       medicamento: map['medicamento'] ?? '',
       cantidadVendida: int.parse(map['cantidad_vendida'].toString()),
       totalVendido: double.parse(map['total_vendido'].toString()),
+      fecha: map['fecha']?.toString() ?? '',
     );
   }
 }

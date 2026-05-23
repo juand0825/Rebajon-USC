@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../DAO/usuario_dao.dart';
+import '../Models/usuario_model.dart';
 
 class AuthController extends ChangeNotifier {
   bool cargando = false;
@@ -9,6 +10,9 @@ class AuthController extends ChangeNotifier {
   int? idUsuarioActual;
   String? rolActual;
   String? emailActual;
+
+  List<UsuarioModel> usuarios = [];
+  bool cargandoUsuarios = false;
 
   final UsuarioDao _dao = UsuarioDao();
 
@@ -38,6 +42,7 @@ class AuthController extends ChangeNotifier {
     try {
       await _dao.registrar(email, clave, numIdentificacion, rol);
       registrado = true;
+      await cargarUsuarios();
     } catch (e) {
       error = "Error al registrar: $e";
     }
@@ -46,7 +51,69 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // LOGIN CON NÚMERO DE DOCUMENTO Y CLAVE
+  Future<void> cargarUsuarios() async {
+    cargandoUsuarios = true;
+    notifyListeners();
+
+    try {
+      usuarios = await _dao.obtenerTodos();
+    } catch (e) {
+      error = "Error al cargar usuarios: $e";
+    }
+
+    cargandoUsuarios = false;
+    notifyListeners();
+  }
+
+  Future<bool> eliminarUsuario(int id) async {
+    try {
+      await _dao.eliminar(id);
+      await cargarUsuarios();
+      return true;
+    } catch (e) {
+      error = "Error al eliminar: $e";
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> actualizarUsuario({
+    required int id,
+    required String email,
+    required String numIdentificacion,
+    required String rol,
+    String? nuevaClave,
+  }) async {
+    if (numIdentificacion.length != 10) {
+      error = "El número de identificación debe tener 10 dígitos";
+      notifyListeners();
+      return false;
+    }
+
+    cargando = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      await _dao.actualizar(
+        id: id,
+        email: email,
+        numIdentificacion: numIdentificacion,
+        rol: rol,
+        nuevaClave: nuevaClave,
+      );
+      await cargarUsuarios();
+      cargando = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      error = "Error al actualizar: $e";
+      cargando = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> login(String numIdentificacion, String clave) async {
     if (numIdentificacion.isEmpty || clave.isEmpty) {
       error = "Por favor completa todos los campos";
@@ -65,7 +132,6 @@ class AuthController extends ChangeNotifier {
         idUsuarioActual = usuario.id;
         rolActual = usuario.rol;
         emailActual = usuario.email;
-
         cargando = false;
         notifyListeners();
         return true;
@@ -92,6 +158,7 @@ class AuthController extends ChangeNotifier {
     idUsuarioActual = null;
     rolActual = null;
     emailActual = null;
+    usuarios = [];
     notifyListeners();
   }
 }
