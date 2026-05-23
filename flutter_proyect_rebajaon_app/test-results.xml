@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite errors="0" failures="0" tests="11" skipped="0" name="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" timestamp="2026-05-23T00:10:21">
+    <properties>
+      <property name="platform" value="vm"/>
+    </properties>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaStockMinimo() no genera alerta si el stock est?? por encima del m??nimo" time="0.024"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaStockMinimo() genera alerta ADVERTENCIA si stock llega al m??nimo y no existe alerta activa" time="0.015"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaStockMinimo() genera alerta CRITICO si stock es 0" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaStockMinimo() actualiza alerta si ya existe una activa" time="0.008"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaCadenaFrio() no genera alerta si la temperatura est?? dentro del rango" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaCadenaFrio() genera alerta CRITICO si temperatura est?? fuera del rango" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaCadenaFrio() no genera alerta si ya existe una activa de cadena fr??o" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaVencimientoProximo() no genera alerta si vence en m??s de 30 d??as" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="generarAlertaVencimientoProximo() genera alerta si vence en menos de 30 d??as" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="resolverAlertaStockMinimoSiCorresponde() resuelve la alerta si el stock supera el m??nimo" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.alerta_controller" name="resolverAlertaStockMinimoSiCorresponde() no resuelve la alerta si el stock sigue en m??nimo" time="0.003"/>
+  </testsuite>
+  <testsuite errors="0" failures="0" tests="10" skipped="0" name="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" timestamp="2026-05-23T00:10:21">
+    <properties>
+      <property name="platform" value="vm"/>
+    </properties>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="login() retorna true y guarda datos cuando las credenciales son v??lidas" time="0.036"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="login() retorna false y setea error cuando el usuario no existe" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="login() retorna false y setea error cuando el email est?? vac??o" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="login() retorna false y setea error cuando la clave est?? vac??a" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="login() retorna false y setea error de conexi??n cuando el DAO lanza excepci??n" time="0.005"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="register() registra correctamente con datos v??lidos" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="register() no llama al DAO si el email est?? vac??o" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="register() no llama al DAO si numIdentificacion no tiene 10 d??gitos" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="register() setea error si el DAO lanza excepci??n al registrar" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.auth_controller" name="cerrarSesion() limpia todos los datos del usuario" time="0.003"/>
+  </testsuite>
+  <testsuite errors="0" failures="0" tests="9" skipped="0" name="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" timestamp="2026-05-23T00:10:21">
+    <properties>
+      <property name="platform" value="vm"/>
+    </properties>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="guardarMedicamentoYLote() guarda medicamento y lote correctamente con datos v??lidos" time="0.037"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="guardarMedicamentoYLote() lanza excepci??n si buscarPorNombre retorna null" time="0.007"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="guardarMedicamentoYLote() no inserta lote si el DAO de medicamento lanza excepci??n" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="guardarLoteAMedicamentoExistente() inserta lote correctamente con datos v??lidos" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="guardarLoteAMedicamentoExistente() lanza excepci??n si el DAO de lote falla" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="listarMedicamentos() retorna lista de medicamentos correctamente" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="listarMedicamentos() retorna lista vac??a cuando no hay medicamentos" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="buscarPorNombre() retorna medicamento cuando existe" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.medicamento_controller" name="buscarPorNombre() retorna null cuando el medicamento no existe" time="0.002"/>
+  </testsuite>
+  <testsuite errors="0" failures="0" tests="10" skipped="0" name="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" timestamp="2026-05-23T00:10:21">
+    <properties>
+      <property name="platform" value="vm"/>
+    </properties>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="obtenerResumen() retorna resumen con datos correctos" time="0.03"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="obtenerResumen() retorna resumen con valores en cero cuando no hay datos" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="productosMasVendidos() retorna lista de productos vendidos correctamente" time="0.004"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="productosMasVendidos() retorna lista vac??a cuando no hay ventas" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="resumenAlertas() retorna lista de alertas agrupadas correctamente" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="resumenAlertas() retorna lista vac??a cuando no hay alertas" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="lotesRegistrados() retorna lista de lotes correctamente" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="lotesRegistrados() retorna lista vac??a cuando no hay lotes" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="inventarioActual() retorna inventario correctamente" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.reporte_dao" name="inventarioActual() retorna lista vac??a cuando no hay medicamentos" time="0.002"/>
+  </testsuite>
+  <testsuite errors="0" failures="0" tests="17" skipped="0" name="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" timestamp="2026-05-23T00:10:21">
+    <properties>
+      <property name="platform" value="vm"/>
+    </properties>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="agregarAlCarrito() agrega medicamento activo con stock al carrito" time="0.032"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="agregarAlCarrito() incrementa cantidad si el medicamento ya est?? en el carrito" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="agregarAlCarrito() retorna error si el medicamento est?? inactivo" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="agregarAlCarrito() retorna error si el lote est?? vencido" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="agregarAlCarrito() retorna error si no hay stock disponible" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="agregarAlCarrito() retorna error si se supera el stock disponible" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="quitarUnaUnidad() reduce cantidad en 1 si hay m??s de una unidad" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="quitarUnaUnidad() elimina el item si la cantidad llega a 0" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="eliminarDelCarrito() elimina el item del carrito correctamente" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="calcularTotal() retorna 0 cuando el carrito est?? vac??o" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="calcularTotal() calcula el total correctamente con un item" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="calcularTotal() calcula el total correctamente con m??ltiples unidades" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="loteVencido() retorna true para fecha pasada" time="0.002"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="loteVencido() retorna false para fecha futura" time="0.003"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="finalizarVenta() lanza excepci??n si el carrito est?? vac??o" time="0.007"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="finalizarVenta() completa la venta correctamente con carrito v??lido" time="0.017"/>
+    <testcase classname="C:.Rebajon_USC.flutter_proyect_rebajaon_app.test.controller.ventas_controller" name="finalizarVenta() lanza excepci??n si el medicamento no se encuentra al finalizar" time="0.018"/>
+  </testsuite>
+</testsuites>

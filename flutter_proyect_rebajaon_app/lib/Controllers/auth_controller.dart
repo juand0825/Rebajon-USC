@@ -14,7 +14,9 @@ class AuthController extends ChangeNotifier {
   List<UsuarioModel> usuarios = [];
   bool cargandoUsuarios = false;
 
-  final UsuarioDao _dao = UsuarioDao();
+  final UsuarioDao _dao;
+
+  AuthController({UsuarioDao? usuarioDao}) : _dao = usuarioDao ?? UsuarioDao();
 
   Future<void> register(
     String email,
@@ -84,6 +86,12 @@ class AuthController extends ChangeNotifier {
     required String rol,
     String? nuevaClave,
   }) async {
+    if (email.isEmpty || numIdentificacion.isEmpty || rol.isEmpty) {
+      error = "Todos los campos son obligatorios";
+      notifyListeners();
+      return false;
+    }
+
     if (numIdentificacion.length != 10) {
       error = "El número de identificación debe tener 10 dígitos";
       notifyListeners();
@@ -102,7 +110,9 @@ class AuthController extends ChangeNotifier {
         rol: rol,
         nuevaClave: nuevaClave,
       );
+
       await cargarUsuarios();
+
       cargando = false;
       notifyListeners();
       return true;
@@ -132,6 +142,7 @@ class AuthController extends ChangeNotifier {
         idUsuarioActual = usuario.id;
         rolActual = usuario.rol;
         emailActual = usuario.email;
+
         cargando = false;
         notifyListeners();
         return true;
@@ -159,6 +170,8 @@ class AuthController extends ChangeNotifier {
     rolActual = null;
     emailActual = null;
     usuarios = [];
+    error = null;
+    registrado = false;
     notifyListeners();
   }
 }
