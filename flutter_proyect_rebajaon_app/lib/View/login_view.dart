@@ -14,8 +14,8 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   final _documentoCtrl = TextEditingController();
-  final _claveCtrl     = TextEditingController();
-  bool _verClave       = false;
+  final _claveCtrl = TextEditingController();
+  bool _verClave = false;
 
   @override
   void dispose() {
@@ -25,11 +25,8 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _ingresar() async {
-    final auth  = context.read<AuthController>();
-    final exito = await auth.login(
-      _documentoCtrl.text.trim(),
-      _claveCtrl.text,
-    );
+    final auth = context.read<AuthController>();
+    final exito = await auth.login(_documentoCtrl.text.trim(), _claveCtrl.text);
 
     if (exito && mounted) {
       if (auth.rolActual == 'admin') {
@@ -69,45 +66,10 @@ class _LoginViewState extends State<LoginView> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-
-                    // ── PLACEHOLDER LOGO ──────────────────────────
-                    // Cuando tengas el logo reemplazá esto por:
-                    // Image.asset('assets/images/logo.png', height: 80, fit: BoxFit.contain)
-                    Container(
+                    Image.asset(
+                      'lib/Temas/logo.png',
                       height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryTint,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image_outlined,
-                              color: AppColors.primaryLight, size: 28),
-                          SizedBox(width: 10),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Logo El Rebajón USC",
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                "assets/images/logo.png",
-                                style: TextStyle(
-                                  color: AppColors.primaryLight,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      fit: BoxFit.contain,
                     ),
 
                     const SizedBox(height: 28),
@@ -131,8 +93,11 @@ class _LoginViewState extends State<LoginView> {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         labelText: "Número de documento",
-                        prefixIcon: Icon(Icons.badge_outlined,
-                            color: AppColors.primaryLight, size: 20),
+                        prefixIcon: Icon(
+                          Icons.badge_outlined,
+                          color: AppColors.primaryLight,
+                          size: 20,
+                        ),
                       ),
                     ),
 
@@ -143,8 +108,11 @@ class _LoginViewState extends State<LoginView> {
                       obscureText: !_verClave,
                       decoration: InputDecoration(
                         labelText: "Contraseña",
-                        prefixIcon: const Icon(Icons.lock_outline,
-                            color: AppColors.primaryLight, size: 20),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.primaryLight,
+                          size: 20,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _verClave
@@ -163,15 +131,20 @@ class _LoginViewState extends State<LoginView> {
                       const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.errorTint,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.error_outline,
-                                color: AppColors.error, size: 16),
+                            const Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                              size: 16,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -205,8 +178,6 @@ class _LoginViewState extends State<LoginView> {
                             : const Text("Ingresar"),
                       ),
                     ),
-
-                    const SizedBox(height: 16),
                   ],
                 ),
               ),
