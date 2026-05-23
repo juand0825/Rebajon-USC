@@ -10,7 +10,8 @@ class AuthController extends ChangeNotifier {
   String? rolActual;
   String? emailActual;
 
-  final UsuarioDao _dao = UsuarioDao();
+ final UsuarioDao _dao;
+AuthController({UsuarioDao? usuarioDao}) : _dao = usuarioDao ?? UsuarioDao();
 
   Future<void> register(
     String email,

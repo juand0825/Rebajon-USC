@@ -5,9 +5,11 @@ import '../models/medicamento_model.dart';
 import '../models/lote_model.dart';
 
 class MedicamentoController {
-  final MedicamentoDao medicamentoDao = MedicamentoDao();
-
-  final LoteDao loteDao = LoteDao();
+  final MedicamentoDao medicamentoDao;
+final LoteDao loteDao;
+MedicamentoController({MedicamentoDao? medicamentoDao, LoteDao? loteDao})
+    : medicamentoDao = medicamentoDao ?? MedicamentoDao(),
+      loteDao = loteDao ?? LoteDao();
 
   Future<void> guardarMedicamentoYLote({
     required String nombre,

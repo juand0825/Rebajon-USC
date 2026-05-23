@@ -2,7 +2,9 @@ import '../DAO/alerta_dao.dart';
 import '../models/alerta_model.dart';
 
 class AlertaController {
-  final AlertaDao alertaDao = AlertaDao();
+  final AlertaDao alertaDao;
+  AlertaController({AlertaDao? alertaDao}) : alertaDao = alertaDao ?? AlertaDao();
+ 
 
   Future<String?> generarAlertaCadenaFrio({
     required int idMedicamento,

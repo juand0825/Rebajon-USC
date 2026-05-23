@@ -8,12 +8,23 @@ import '../models/scanner_model.dart';
 import '../models/ventas_model.dart';
 
 class VentasController {
-  final ScannerDao scannerDao = ScannerDao();
-  final LoteDao loteDao = LoteDao();
-  final VentaDao ventaDao = VentaDao();
-  final CarritoDao carritoDao = CarritoDao();
-  final AlertaController alertaController = AlertaController();
+ final ScannerDao scannerDao;
+final LoteDao loteDao;
+final VentaDao ventaDao;
+final CarritoDao carritoDao;
+final AlertaController alertaController;
 
+VentasController({
+  ScannerDao? scannerDao,
+  LoteDao? loteDao,
+  VentaDao? ventaDao,
+  CarritoDao? carritoDao,
+  AlertaController? alertaController,
+}) : scannerDao = scannerDao ?? ScannerDao(),
+     loteDao = loteDao ?? LoteDao(),
+     ventaDao = ventaDao ?? VentaDao(),
+     carritoDao = carritoDao ?? CarritoDao(),
+     alertaController = alertaController ?? AlertaController();
   final List<VentaItemModel> carrito = [];
 
   Future<ScannerModel?> buscarMedicamento(String codigo) async {
