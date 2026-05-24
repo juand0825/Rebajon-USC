@@ -1,0 +1,159 @@
+import '../DAO/alerta_dao.dart';
+import '../models/alerta_model.dart';
+
+class AlertaController {
+  final AlertaDao alertaDao;
+  AlertaController({AlertaDao? alertaDao}) : alertaDao = alertaDao ?? AlertaDao();
+ 
+
+  Future<String?> generarAlertaCadenaFrio({
+    required int idMedicamento,
+    required String nombreMedicamento,
+    required double temperatura,
+    required double rangoMin,
+    required double rangoMax,
+  }) async {
+    final fueraDeRango = temperatura < rangoMin || temperatura > rangoMax;
+
+    if (!fueraDeRango) return null;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'CADENA_FRIO',
+    );
+
+    if (yaExiste) return null;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: null,
+      tipo: 'CADENA_FRIO',
+      nivelGravedad: 'CRITICO',
+      mensaje:
+          'La temperatura del medicamento $nombreMedicamento está fuera del rango seguro.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+    return alerta.mensaje;
+  }
+
+  Future<String?> generarAlertaStockMinimo({
+    required int idMedicamento,
+    required String nombreMedicamento,
+    required int stockActual,
+    required int stockMinimo,
+  }) async {
+    if (stockActual > stockMinimo) return null;
+
+    final esCritico = stockActual <= 0;
+    final nivelGravedad = esCritico ? 'CRITICO' : 'ADVERTENCIA';
+
+    final mensaje = esCritico
+        ? 'El medicamento $nombreMedicamento se quedó sin stock.'
+        : 'El medicamento $nombreMedicamento alcanzó el stock mínimo.';
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'STOCK_MINIMO',
+    );
+
+    if (yaExiste) {
+      await alertaDao.actualizarAlertaActiva(
+        idMedicamento: idMedicamento,
+        tipo: 'STOCK_MINIMO',
+        nivelGravedad: nivelGravedad,
+        mensaje: mensaje,
+      );
+
+      return null;
+    }
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: null,
+      tipo: 'STOCK_MINIMO',
+      nivelGravedad: nivelGravedad,
+      mensaje: mensaje,
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+    return alerta.mensaje;
+  }
+
+  Future<void> generarAlertaVencimientoProximo({
+    required int idMedicamento,
+    required int idLote,
+    required String nombreMedicamento,
+    required DateTime fechaVencimiento,
+  }) async {
+    final hoy = DateTime.now();
+    final diferencia = fechaVencimiento.difference(hoy).inDays;
+
+    if (diferencia < 0 || diferencia > 30) return;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'VENCIMIENTO_PROXIMO',
+    );
+
+    if (yaExiste) return;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: idLote,
+      tipo: 'VENCIMIENTO_PROXIMO',
+      nivelGravedad: 'ADVERTENCIA',
+      mensaje:
+          'El lote del medicamento $nombreMedicamento está próximo a vencer.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+  }
+
+  Future<String?> generarAlertaMedicamentoVencido({
+    required int idMedicamento,
+    required int idLote,
+    required String nombreMedicamento,
+    required DateTime fechaVencimiento,
+  }) async {
+    final hoy = DateTime.now();
+
+    if (!fechaVencimiento.isBefore(hoy)) return null;
+
+    final yaExiste = await alertaDao.existeAlertaActiva(
+      idMedicamento: idMedicamento,
+      tipo: 'MEDICAMENTO_VENCIDO',
+    );
+
+    if (yaExiste) return null;
+
+    final alerta = AlertaModel(
+      idMedicamento: idMedicamento,
+      idLote: idLote,
+      tipo: 'MEDICAMENTO_VENCIDO',
+      nivelGravedad: 'CRITICO',
+      mensaje:
+          'El lote del medicamento $nombreMedicamento se encuentra vencido.',
+      resulta: false,
+    );
+
+    await alertaDao.insertarAlerta(alerta);
+    return alerta.mensaje;
+  }
+
+  Future<void> resolverAlertaStockMinimoSiCorresponde({
+    required int idMedicamento,
+    required int stockActual,
+    required int stockMinimo,
+  }) async {
+    if (stockActual > stockMinimo) {
+      await alertaDao.resolverAlertasActivas(
+        idMedicamento: idMedicamento,
+        tipo: 'STOCK_MINIMO',
+      );
+    }
+  }
+}

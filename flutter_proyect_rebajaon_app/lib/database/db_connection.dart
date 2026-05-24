@@ -4,7 +4,7 @@ class DbConnection {
   static MySQLConnection? _connection;
 
   static Future<MySQLConnection> getConnection() async {
-    if (_connection != null)  {
+    if (_connection != null) {
       return _connection!;
     }
 
