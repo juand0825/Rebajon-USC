@@ -6,7 +6,7 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_proyect_rebajaon_app/DAO/usuario_dao.dart' as _i2;
-import 'package:flutter_proyect_rebajaon_app/Models/usuario_model.dart' as _i4;
+import 'package:flutter_proyect_rebajaon_app/models/usuario_model.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -52,10 +52,53 @@ class MockUsuarioDao extends _i1.Mock implements _i2.UsuarioDao {
           as _i3.Future<void>);
 
   @override
-  _i3.Future<_i4.UsuarioModel?> login(String? email, String? clave) =>
+  _i3.Future<_i4.UsuarioModel?> login(
+    String? numIdentificacion,
+    String? clave,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#login, [email, clave]),
+            Invocation.method(#login, [numIdentificacion, clave]),
             returnValue: _i3.Future<_i4.UsuarioModel?>.value(),
           )
           as _i3.Future<_i4.UsuarioModel?>);
+
+  @override
+  _i3.Future<List<_i4.UsuarioModel>> obtenerTodos() =>
+      (super.noSuchMethod(
+            Invocation.method(#obtenerTodos, []),
+            returnValue: _i3.Future<List<_i4.UsuarioModel>>.value(
+              <_i4.UsuarioModel>[],
+            ),
+          )
+          as _i3.Future<List<_i4.UsuarioModel>>);
+
+  @override
+  _i3.Future<void> eliminar(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#eliminar, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> actualizar({
+    required int? id,
+    required String? email,
+    required String? numIdentificacion,
+    required String? rol,
+    String? nuevaClave,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#actualizar, [], {
+              #id: id,
+              #email: email,
+              #numIdentificacion: numIdentificacion,
+              #rol: rol,
+              #nuevaClave: nuevaClave,
+            }),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

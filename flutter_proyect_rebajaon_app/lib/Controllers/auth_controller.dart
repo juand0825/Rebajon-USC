@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../DAO/usuario_dao.dart';
-import '../Models/usuario_model.dart';
+import '../models/usuario_model.dart';
 
 class AuthController extends ChangeNotifier {
   bool cargando = false;

@@ -16,7 +16,6 @@ void main() {
 
   // ─── OBTENER RESUMEN ─────────────────────────────────────
   group('obtenerResumen()', () {
-
     test('retorna resumen con datos correctos', () async {
       final resumenFalso = ReporteResumenModel(
         totalVentas: 3,
@@ -29,8 +28,9 @@ void main() {
         lotesRegistrados: 1,
       );
 
-      when(mockReporteDao.obtenerResumen())
-          .thenAnswer((_) async => resumenFalso);
+      when(
+        mockReporteDao.obtenerResumen(),
+      ).thenAnswer((_) async => resumenFalso);
 
       final resultado = await mockReporteDao.obtenerResumen();
 
@@ -56,8 +56,9 @@ void main() {
         lotesRegistrados: 0,
       );
 
-      when(mockReporteDao.obtenerResumen())
-          .thenAnswer((_) async => resumenVacio);
+      when(
+        mockReporteDao.obtenerResumen(),
+      ).thenAnswer((_) async => resumenVacio);
 
       final resultado = await mockReporteDao.obtenerResumen();
 
@@ -68,23 +69,25 @@ void main() {
 
   // ─── PRODUCTOS MÁS VENDIDOS ──────────────────────────────
   group('productosMasVendidos()', () {
-
     test('retorna lista de productos vendidos correctamente', () async {
       final productosFalsos = [
         ReporteVentaProductoModel(
           medicamento: 'Acetaminofén',
           cantidadVendida: 5,
           totalVendido: 10000,
+          fecha: '2026-05-23',
         ),
         ReporteVentaProductoModel(
           medicamento: 'Ibuprofeno',
           cantidadVendida: 3,
           totalVendido: 9000,
+          fecha: '2026-05-23',
         ),
       ];
 
-      when(mockReporteDao.productosMasVendidos())
-          .thenAnswer((_) async => productosFalsos);
+      when(
+        mockReporteDao.productosMasVendidos(),
+      ).thenAnswer((_) async => productosFalsos);
 
       final resultado = await mockReporteDao.productosMasVendidos();
 
@@ -93,11 +96,11 @@ void main() {
       expect(resultado.first.medicamento, equals('Acetaminofén'));
       expect(resultado.first.cantidadVendida, equals(5));
       expect(resultado.first.totalVendido, equals(10000));
+      expect(resultado.first.fecha, equals('2026-05-23'));
     });
 
     test('retorna lista vacía cuando no hay ventas', () async {
-      when(mockReporteDao.productosMasVendidos())
-          .thenAnswer((_) async => []);
+      when(mockReporteDao.productosMasVendidos()).thenAnswer((_) async => []);
 
       final resultado = await mockReporteDao.productosMasVendidos();
 
@@ -107,7 +110,6 @@ void main() {
 
   // ─── RESUMEN ALERTAS ─────────────────────────────────────
   group('resumenAlertas()', () {
-
     test('retorna lista de alertas agrupadas correctamente', () async {
       final alertasFalsas = [
         ReporteAlertaModel(
@@ -117,8 +119,9 @@ void main() {
         ),
       ];
 
-      when(mockReporteDao.resumenAlertas())
-          .thenAnswer((_) async => alertasFalsas);
+      when(
+        mockReporteDao.resumenAlertas(),
+      ).thenAnswer((_) async => alertasFalsas);
 
       final resultado = await mockReporteDao.resumenAlertas();
 
@@ -129,8 +132,7 @@ void main() {
     });
 
     test('retorna lista vacía cuando no hay alertas', () async {
-      when(mockReporteDao.resumenAlertas())
-          .thenAnswer((_) async => []);
+      when(mockReporteDao.resumenAlertas()).thenAnswer((_) async => []);
 
       final resultado = await mockReporteDao.resumenAlertas();
 
@@ -140,7 +142,6 @@ void main() {
 
   // ─── LOTES REGISTRADOS ───────────────────────────────────
   group('lotesRegistrados()', () {
-
     test('retorna lista de lotes correctamente', () async {
       final lotesFalsos = [
         ReporteLoteModel(
@@ -153,8 +154,9 @@ void main() {
         ),
       ];
 
-      when(mockReporteDao.lotesRegistrados())
-          .thenAnswer((_) async => lotesFalsos);
+      when(
+        mockReporteDao.lotesRegistrados(),
+      ).thenAnswer((_) async => lotesFalsos);
 
       final resultado = await mockReporteDao.lotesRegistrados();
 
@@ -166,8 +168,7 @@ void main() {
     });
 
     test('retorna lista vacía cuando no hay lotes', () async {
-      when(mockReporteDao.lotesRegistrados())
-          .thenAnswer((_) async => []);
+      when(mockReporteDao.lotesRegistrados()).thenAnswer((_) async => []);
 
       final resultado = await mockReporteDao.lotesRegistrados();
 
@@ -177,7 +178,6 @@ void main() {
 
   // ─── INVENTARIO ACTUAL ───────────────────────────────────
   group('inventarioActual()', () {
-
     test('retorna inventario correctamente', () async {
       final inventarioFalso = [
         ReporteInventarioModel(
@@ -189,8 +189,9 @@ void main() {
         ),
       ];
 
-      when(mockReporteDao.inventarioActual())
-          .thenAnswer((_) async => inventarioFalso);
+      when(
+        mockReporteDao.inventarioActual(),
+      ).thenAnswer((_) async => inventarioFalso);
 
       final resultado = await mockReporteDao.inventarioActual();
 
@@ -202,8 +203,7 @@ void main() {
     });
 
     test('retorna lista vacía cuando no hay medicamentos', () async {
-      when(mockReporteDao.inventarioActual())
-          .thenAnswer((_) async => []);
+      when(mockReporteDao.inventarioActual()).thenAnswer((_) async => []);
 
       final resultado = await mockReporteDao.inventarioActual();
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Controllers/auth_controller.dart';
-import '../Models/usuario_model.dart';
+import '../models/usuario_model.dart';
 import '../Temas/Estilos.dart';
 
 class RegistroView extends StatefulWidget {

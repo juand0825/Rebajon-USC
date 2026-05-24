@@ -1,5 +1,5 @@
 import '../database/db_connection.dart';
-import '../Models/usuario_model.dart';
+import '../models/usuario_model.dart';
 
 class UsuarioDao {
   Future<void> registrar(

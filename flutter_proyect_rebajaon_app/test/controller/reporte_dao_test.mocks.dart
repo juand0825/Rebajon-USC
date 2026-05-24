@@ -52,9 +52,15 @@ class MockReporteDao extends _i1.Mock implements _i3.ReporteDao {
           as _i4.Future<_i2.ReporteResumenModel>);
 
   @override
-  _i4.Future<List<_i2.ReporteVentaProductoModel>> productosMasVendidos() =>
+  _i4.Future<List<_i2.ReporteVentaProductoModel>> productosMasVendidos({
+    DateTime? fechaDesde,
+    DateTime? fechaHasta,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#productosMasVendidos, []),
+            Invocation.method(#productosMasVendidos, [], {
+              #fechaDesde: fechaDesde,
+              #fechaHasta: fechaHasta,
+            }),
             returnValue: _i4.Future<List<_i2.ReporteVentaProductoModel>>.value(
               <_i2.ReporteVentaProductoModel>[],
             ),
